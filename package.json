@@ -1,0 +1,22 @@
+{
+  "name": "wmfjs",
+  "version": "0.0.1",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "ts-node ./test/test.ts"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@babel/core": "^7.16.5",
+    "@babel/preset-env": "^7.16.5",
+    "@babel/preset-typescript": "^7.16.5",
+    "@types/jest": "^27.0.3",
+    "@types/jsdom": "^16.2.14",
+    "babel-jest": "^27.4.5",
+    "jest": "^27.4.5",
+    "jsdom": "^19.0.0",
+    "ts-node": "^10.4.0"
+  }
+}

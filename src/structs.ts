@@ -12,13 +12,18 @@ export interface PointS {
     y: number;
 }
 
+export type WMFObject =
+    Pen | LogBrush;
+
 export interface Pen {
+    objectType: "Pen";
     style: PenStyle;
     width: PointS;
     color: number;
 }
 
 export interface LogBrush {
+    objectType: "Brush",
     style: BrushStyle;
     color: number;
     hatch: HatchStyle;

@@ -15,6 +15,7 @@ export const records = {
     META_CREATEBRUSHINDIRECT: logBrush,
     META_DELETEOBJECT: uint16,
     SETMITERLIMIT: int32,
+    META_SETBKCOLOR: rgb,
     META_EOF: () => [],
     META_ESCAPE(buf: DataView, offset: number): [number, number] {
         const fn = buf.getUint16(offset, true);

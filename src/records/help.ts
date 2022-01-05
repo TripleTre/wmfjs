@@ -37,8 +37,8 @@ export function rgb(buf: DataView, offset: number): number[] {
 
 export function pointS(buf: DataView, offset: number): PointS[] {
     return [{
-        x: buf.getInt16(offset),
-        y: buf.getInt16(offset + 2),
+        x: buf.getInt16(offset, true),
+        y: buf.getInt16(offset + 2, true),
     }];
 }
 
@@ -47,6 +47,7 @@ export function penObject(buf: DataView, offset: number): Pen[] {
     const point = pointS(buf, offset + 2);
     const color = rgb(buf, offset + 6);
     return [{
+        objectType: "Pen",
         style: penStyle,
         width: point[0],
         color: color[0],
@@ -58,6 +59,7 @@ export function logBrush(buf: DataView, offset: number): LogBrush[] {
     const color = rgb(buf, offset + 2);
     const hatch = buf.getUint16(offset + 6, true);
     return [{
+        objectType: "Brush",
         style,
         color: color[0],
         hatch,

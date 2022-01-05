@@ -1,115 +1,70 @@
-import { IPlayback, IPlaybackCtx } from "../IPlayback";
-import { BinaryRasterOperation, MapMode, MetafileEscapes, MixMode, PolyFillMode } from "../enums";
-import { LogBrush, Pen, PointS } from "../structs";
-import { Header, Placeable } from "../types";
-import { penStyleToAttrs } from "./help";
+import { PointS } from "../structs";
+import { BasicPlayback } from "../BasicPlayback";
+import { decimalToCssString } from "../color";
+import { BrushStyle, PenStyle } from "../enums";
 
-export class SvgPlayback implements IPlayback {
+export class SvgPlayback extends BasicPlayback {
 
-    private svgElement: SVGElement;
-
-    private header!: Header;
-    private placeable?: Placeable;
-    private objectTable: any[] = [];
-    private ctx!: IPlaybackCtx;
-
-    private viewExt: PointS = { x: 0, y: 0 };
-    private viewOrigin: PointS = { x: 0, y: 0 };
-    private polyFillRule: "nonzero" | "evenodd" = "evenodd";
-    private miterLimit: number = -1;
+    public svgElement: SVGElement;
 
     public constructor() {
+        super();
         this.svgElement = document.createElementNS("http://www.w3.org/2000/svg", "svg");
         this.svgElement.setAttribute("xmlns", "http://www.w3.org/2000/svg");
         this.svgElement.setAttribute("version", "1.1");
     }
 
-    init(header: Header, placeable: Placeable) {
-        this.header = header;
-        this.objectTable = new Array(header.numberOfObjects);
-    }
-
-    private updateViewBox() {
-        this.svgElement.setAttribute("viewBox", `${this.viewOrigin.x} ${this.viewOrigin.y} ${this.viewExt.x} ${this.viewExt.y}`);
-    }
-
-    private getObject(index: number): any {
-        return this.objectTable[index - 1];
-    }
-
-    private putObject(obj: any): void {
-        const nextIndex = this.objectTable.findIndex(v => !v);
-        this.objectTable[nextIndex] = obj;
-    }
-
-    META_SETWINDOWEXT(x: number, y: number): void {
-        this.viewExt = { x, y };
-        this.updateViewBox();
-    }
-
-    META_SETWINDOWORG(x: number, y: number): void {
-        this.viewOrigin = { x, y };
-        this.updateViewBox();
-    }
-
-    META_SETMAPMODE(mode: MapMode): void {
-        console.log("set map mode", MapMode[mode]);
-    }
-
-    META_SETBKMODE(mode: MixMode): void {
-        console.log("set mix mode", MixMode[mode]);
-    }
-
-    META_SETPOLYFILLMODE(mode: PolyFillMode): void {
-        if (mode === PolyFillMode.ALTERNATE) {
-            this.polyFillRule = "evenodd";
-        } else if (mode === PolyFillMode.WINDING) {
-            this.polyFillRule = "nonzero"
+    private applyPenStyle(element: SVGElement): void {
+        const { pen } = this.ctx;
+        const flags = Object.keys(PenStyle).filter(v => /^PS_/.test(v)) as Array<keyof typeof PenStyle>;
+        flags.forEach(f => {
+            if (PenStyle[f] & pen.style) {
+                console.log(f);
+            }
+        });
+        element.setAttribute("stroke-width", pen.width.x.toString());
+        element.setAttribute("stroke", decimalToCssString(pen.color));
+        if (PenStyle.PS_NULL & pen.style) {
+            element.setAttribute("stroke-width", "0");
+        }
+        if (PenStyle.PS_ENDCAP_FLAT & pen.style) {
+            element.setAttribute("stroke-linecap", "round");
+        }
+        if (PenStyle.PS_JOIN_MITER & pen.style) {
+            element.setAttribute("stroke-linejoin", "miter");
         }
     }
 
-    META_SETTEXTALIGN(alignFlag: number): void {
-        console.log("set text align", alignFlag);
+    private applyBrushStyle(element: SVGElement): void {
+        const { brush } = this.ctx;
+        if (brush.style === BrushStyle.BS_NULL) {
+            element.setAttribute("fill", "none");
+        } else if (brush.style === BrushStyle.BS_SOLID) {
+            element.setAttribute("fill", decimalToCssString(brush.color));
+        } else {
+            console.warn("unsupported brush style", BrushStyle[brush.style]);
+        }
     }
 
-    META_SETTEXTCOLOR(color: number): void {
-        console.log("set text color", color);
+    protected updateViewBox(ext: PointS, origin: PointS): void {
+        this.svgElement.setAttribute("viewBox", `${origin.x} ${origin.y} ${ext.x} ${ext.y}`);
     }
 
-    META_SETROP2(drawMode: BinaryRasterOperation): void {
-        console.log("set draw mode", BinaryRasterOperation[drawMode]);
+    protected drawPolygon(points: PointS[]): void {
+        const { polyFillRule } = this.ctx;
+        let d = `M ${points[0].x} ${points[0].y} `;
+        d += points.slice(1).reduce((result, next) => {
+            result += `L ${next.x} ${next.y} `;
+            return result;
+        }, "");
+        const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+        path.setAttribute("d", d);
+        path.setAttribute("fill-rule", polyFillRule);
+
+        this.applyBrushStyle(path);
+        this.applyPenStyle(path);
+
+        this.svgElement.appendChild(path);
     }
 
-    META_ESCAPE(fn: MetafileEscapes, data: ArrayBuffer): void {
-        console.log("escape", MetafileEscapes[fn], data);
-    }
-
-    META_CREATEPENINDIRECT(pen: Pen): void {
-        console.log("create pen", pen);
-        penStyleToAttrs(pen.style);
-    }
-
-    META_SELECTOBJECT(index: number): void {
-        console.log("select object", index);
-    }
-
-    META_CREATEBRUSHINDIRECT(logBrush: LogBrush): void {
-        console.log("crate log brush", logBrush);
-    }
-
-    META_DELETEOBJECT(index: number): void {
-        console.log("delete object", index);
-    }
-
-    META_EOF(): void {
-        console.log("end");
-    }
-
-    META_POLYGON(points: PointS[]): void {
-        console.log("polygon", points);
-    }
-
-    SETMITERLIMIT(miterLimit: number): void {
-        this.miterLimit = miterLimit;
-    }
 }

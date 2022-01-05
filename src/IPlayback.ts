@@ -3,7 +3,7 @@ import { LogBrush, Pen, PointS } from "./structs";
 import { Header, Placeable } from "./types";
 
 export interface IPlayback {
-    init(header: Header, placeable: Placeable): void;
+    init(header: Header, placeable: Placeable | null): void;
     /**
      * set the horizontal and vertical extents of the output window
      * @param x defines the horizontal extent of the window in logical units
@@ -119,4 +119,9 @@ export interface IPlayback {
 export interface IPlaybackCtx {
     pen: Pen;
     brush: LogBrush;
+    textAlign: number;
+    textColor: number;
+    polyFillRule: "evenodd" | "nonzero";
+    miterLimit: number;
+    backgroundColor?: number;
 }

@@ -34,7 +34,7 @@ export function parser(input: ArrayBuffer, playback: IPlayback): void {
     }
     offset += header.headerSize;
 
-    console.log(header, placeable);
+    playback.init(header, placeable);
 
     while (offset < input.byteLength) {
         const size = buf.getUint32(offset, true) * 2;
@@ -45,9 +45,10 @@ export function parser(input: ArrayBuffer, playback: IPlayback): void {
                 if (typeof (playback as any)[MetafileEscapes[escapeType]] === "function") {
                     (playback as any)[MetafileEscapes[escapeType]].apply(playback, (records as any)[MetafileEscapes[escapeType]](buf, escapeDataOffset));
                 } else {
-                    console.warn("unsupport fn ", MetafileEscapes[escapeType]);
+                    console.warn("unsupport escape fn ", MetafileEscapes[escapeType]);
                 }
             } else {
+                console.log("[record]: ", RecordType[fn], (records as any)[RecordType[fn]](buf, offset + 6));
                 (playback as any)[RecordType[fn]].apply(playback, (records as any)[RecordType[fn]](buf, offset + 6));
             }
         } else {

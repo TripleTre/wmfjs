@@ -1,10 +1,8 @@
 import path from "path";
-import { readFile } from "fs/promises";
+import { readFile, readdir } from "fs/promises";
+import * as buffer from "buffer";
 
 const assetsRoot = path.resolve(__dirname, "./assets");
-
-export type TEXT_FILE_NAME =
-    "empty" | "shape";
 
 export function nodeBuf2ArrayBuffer(buf: Buffer) {
     const ab = new ArrayBuffer(buf.length);
@@ -15,7 +13,16 @@ export function nodeBuf2ArrayBuffer(buf: Buffer) {
     return ab;
 }
 
-export async function loadWMFFile(name: TEXT_FILE_NAME) {
-    const buf = await readFile(path.resolve(assetsRoot, `${name}.wmf`));
-    return nodeBuf2ArrayBuffer(buf);
+export async function loadWMFFile(name?: string): Promise<[string, ArrayBuffer][]> {
+    const files = await readdir(assetsRoot);
+    let wmfFiles = files.filter(f => /wmf$/.test(f)).map(v => v.replace(".wmf", ""));
+    const result: [string, ArrayBuffer][] = [];
+    if (name) {
+        wmfFiles = [name];
+    }
+    for (const file of wmfFiles) {
+        const buf = await readFile(path.resolve(assetsRoot, `${file}.wmf`));
+        result.push([file, nodeBuf2ArrayBuffer(buf)]);
+    }
+    return result;
 }

@@ -1,0 +1,35 @@
+import { IPlayback, IPlaybackCtx } from "./IPlayback";
+import { Header, Placeable } from "./types";
+import { LogBrush, Pen, PointS, WMFObject } from "./structs";
+import { BinaryRasterOperation, MapMode, MetafileEscapes, MixMode, PolyFillMode } from "./enums";
+import { RecordsData } from "./parser";
+export declare abstract class BasicPlayback implements IPlayback {
+    protected header: Header;
+    protected placeable?: Placeable;
+    protected ctx: IPlaybackCtx;
+    private objectTable;
+    private viewExt;
+    private viewOrigin;
+    protected abstract updateViewBox(ext: PointS, origin: PointS): void;
+    protected abstract drawPolygon(points: PointS[]): void;
+    init(recordsData: RecordsData): void;
+    protected getObject(index: number): WMFObject | null;
+    protected putObject(obj: any): void;
+    META_SETWINDOWEXT(x: number, y: number): void;
+    META_SETWINDOWORG(x: number, y: number): void;
+    META_SETTEXTALIGN(alignFlag: number): void;
+    META_SETTEXTCOLOR(color: number): void;
+    META_CREATEPENINDIRECT(pen: Pen): void;
+    META_SETPOLYFILLMODE(mode: PolyFillMode): void;
+    META_SETMAPMODE(mode: MapMode): void;
+    META_SETBKMODE(mode: MixMode): void;
+    META_SETROP2(drawMode: BinaryRasterOperation): void;
+    META_ESCAPE(fn: MetafileEscapes, data: ArrayBuffer): void;
+    META_SELECTOBJECT(index: number): void;
+    META_CREATEBRUSHINDIRECT(logBrush: LogBrush): void;
+    META_DELETEOBJECT(index: number): void;
+    META_EOF(): void;
+    META_POLYGON(points: PointS[]): void;
+    SETMITERLIMIT(miterLimit: number): void;
+    META_SETBKCOLOR(color: number): void;
+}

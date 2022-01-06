@@ -1,0 +1,27 @@
+{
+  "name": "@wmfjs/core",
+  "version": "0.0.0",
+  "description": "> TODO: description",
+  "author": "huaguzheng <huaguzheng2007@126.com>",
+  "homepage": "https://github.com/huaguzheng/wmfjs#readme",
+  "license": "ISC",
+  "main": "lib/index.js",
+  "types": "lib/index.d.ts",
+  "directories": {
+    "lib": "lib"
+  },
+  "files": [
+    "lib"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/huaguzheng/wmfjs.git"
+  },
+  "scripts": {
+    "build": "tsc",
+    "start": "tsc --watch"
+  },
+  "bugs": {
+    "url": "https://github.com/huaguzheng/wmfjs/issues"
+  }
+}

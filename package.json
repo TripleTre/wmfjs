@@ -1,10 +1,11 @@
 {
   "name": "wmfjs",
+  "private": true,
   "version": "0.0.1",
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "ts-node ./test/test.ts"
+      "start": "lerna run start --parallel"
   },
   "author": "",
   "license": "ISC",
@@ -17,6 +18,11 @@
     "babel-jest": "^27.4.5",
     "jest": "^27.4.5",
     "jsdom": "^19.0.0",
+    "lerna": "^4.0.0",
     "ts-node": "^10.4.0"
-  }
+  },
+  "workspaces": [
+    "packages/*",
+    "pages"
+  ]
 }

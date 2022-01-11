@@ -5,5 +5,7 @@ export interface ObjectEditorProps {
     config: {
         [key: string]: EditConfig;
     };
+    onChange?: (value: any) => void;
+    editable?: boolean;
 }
 export declare function ObjectEditor(props: ObjectEditorProps): JSX.Element;

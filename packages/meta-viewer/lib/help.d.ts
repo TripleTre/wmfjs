@@ -8,6 +8,7 @@ export declare type LiteralConfig = {
 export declare type EnumConfig = {
     type: "enum";
     enum: any;
+    multi?: boolean;
 };
 export declare type ObjectConfig = {
     type: "object";

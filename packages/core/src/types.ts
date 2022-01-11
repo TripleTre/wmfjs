@@ -2,6 +2,7 @@ import { Rect } from "./structs";
 import { MetafileType, MetafileVersion, PenStyle } from "./enums";
 
 export interface Placeable {
+    fn: "Placeable",
     boundingBox: Rect;
     inch: number;
     reserved: number;
@@ -9,6 +10,7 @@ export interface Placeable {
 }
 
 export interface Header {
+    fn: "Header",
     type: MetafileType;
     headerSize: number;
     version: MetafileVersion;

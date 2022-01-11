@@ -1,8 +1,8 @@
 import { BasicPlayback, BrushStyle, PenStyle } from "@wmfjs/core";
 import { decimalToCssString } from "./color";
 export class SvgPlayback extends BasicPlayback {
-    constructor() {
-        super();
+    constructor(wmf) {
+        super(wmf);
         this.svgElement = document.createElementNS("http://www.w3.org/2000/svg", "svg");
         this.svgElement.setAttribute("xmlns", "http://www.w3.org/2000/svg");
         this.svgElement.setAttribute("version", "1.1");
@@ -11,32 +11,32 @@ export class SvgPlayback extends BasicPlayback {
         const { pen } = this.ctx;
         const flags = Object.keys(PenStyle).filter(v => /^PS_/.test(v));
         flags.forEach(f => {
-            if (PenStyle[f] & pen.style) {
+            if (PenStyle[f] & pen.penStyle) {
                 console.log(f);
             }
         });
         element.setAttribute("stroke-width", pen.width.x.toString());
-        element.setAttribute("stroke", decimalToCssString(pen.color));
-        if (PenStyle.PS_NULL & pen.style) {
+        element.setAttribute("stroke", decimalToCssString(pen.colorRef.valueOf()));
+        if (PenStyle.PS_NULL & pen.penStyle) {
             element.setAttribute("stroke-width", "0");
         }
-        if (PenStyle.PS_ENDCAP_FLAT & pen.style) {
+        if (PenStyle.PS_ENDCAP_FLAT & pen.penStyle) {
             element.setAttribute("stroke-linecap", "round");
         }
-        if (PenStyle.PS_JOIN_MITER & pen.style) {
+        if (PenStyle.PS_JOIN_MITER & pen.penStyle) {
             element.setAttribute("stroke-linejoin", "miter");
         }
     }
     applyBrushStyle(element) {
         const { brush } = this.ctx;
-        if (brush.style === BrushStyle.BS_NULL) {
+        if (brush.brushStyle === BrushStyle.BS_NULL) {
             element.setAttribute("fill", "none");
         }
-        else if (brush.style === BrushStyle.BS_SOLID) {
-            element.setAttribute("fill", decimalToCssString(brush.color));
+        else if (brush.brushStyle === BrushStyle.BS_SOLID) {
+            element.setAttribute("fill", decimalToCssString(brush.colorRef.valueOf()));
         }
         else {
-            console.warn("unsupported brush style", BrushStyle[brush.style]);
+            console.warn("unsupported brush style", BrushStyle[brush.brushStyle]);
         }
     }
     updateViewBox(ext, origin) {

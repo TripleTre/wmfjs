@@ -17,5 +17,5 @@ export declare const records: {
     META_SETBKCOLOR: typeof rgb;
     META_EOF: () => never[];
     META_ESCAPE(buf: DataView, offset: number): [number, number];
-    META_POLYGON(buf: DataView, offset: number): PointS[][];
+    META_POLYGON(buf: DataView, offset: number): PointS[];
 };

@@ -6,11 +6,11 @@ const Layout = styled.div`
 `;
 
 const ViewBlock = styled.div<{ color: string }>`
-  height: 22px;
-  width: 72px;
+  height: 24px;
+  width: 62px;
   background: ${props => props.color};
   border: 1px solid rgb(186, 186, 186);
-  border-radius: 2px;
+  border-radius: 4px;
   cursor: pointer;
   position: relative;
 `;
@@ -18,21 +18,26 @@ const ViewBlock = styled.div<{ color: string }>`
 const StyledPicker = styled(ChromePicker)`
   position: absolute;
   left: calc(100% + 6px);
+  z-index: 9;
 `;
 
 interface ColorEditorProps {
     value: number;
+    onChange?: (value: number) => void;
+    editable?: boolean;
 }
 
 export function ColorEditor(props: ColorEditorProps) {
 
     const block = useRef(null);
     const [pickerVisible, setPickerVisible] = useState(false);
-    const str = "#" + props.value.toString(16).padStart(6, "0");
-    const [hex, setHex] = useState(str);
+    const hexStr = "#" + props.value.toString(16).padStart(6, "0");
+
     const changeHandler = useCallback((color: any) => {
-        setHex(color.hex);
-    }, []);
+        if (props.onChange && props.editable) {
+            props.onChange(parseInt(color.hex.replace("#", ""), 16));
+        }
+    }, [props.onChange, props.editable]);
 
     const showPicker = useCallback((evt: SyntheticEvent) => {
         if (evt.target === block.current) {
@@ -42,8 +47,8 @@ export function ColorEditor(props: ColorEditorProps) {
 
     return (
         <Layout>
-            <ViewBlock ref={block} onClick={showPicker} color={hex}>
-                {pickerVisible && <StyledPicker disableAlpha={true} color={hex} onChangeComplete={changeHandler} />}
+            <ViewBlock ref={block} onClick={showPicker} color={hexStr}>
+                {pickerVisible && <StyledPicker disableAlpha={true} color={hexStr} onChangeComplete={changeHandler} />}
             </ViewBlock>
         </Layout>
     )

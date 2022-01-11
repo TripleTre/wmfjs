@@ -1,29 +1,34 @@
-import { BinaryRasterOperation, MapMode, MetafileEscapes, MixMode, PolyFillMode } from "./enums";
+import { BinaryRasterOperation, MapMode, MetafileEscapes, MixMode, PolyFillMode, RecordType } from "./enums";
+import { Pen } from "./structs/Pen";
+import { LogBrush } from "./structs/LogBrush";
+import { PointS } from "./structs/PointS";
+export function isEscape(record) {
+    return record.recordFunction === RecordType.META_ESCAPE;
+}
 export class BasicPlayback {
-    constructor() {
+    constructor(wmfObject) {
         this.ctx = Object.create(null);
         this.objectTable = [];
-        this.viewExt = { x: 0, y: 0 };
-        this.viewOrigin = { x: 0, y: 0 };
-    }
-    init(recordsData) {
-        this.header = recordsData.header;
-        this.objectTable = new Array(recordsData.header.numberOfObjects);
-        for (const record of recordsData.records) {
-            if (record.fn === "META_ESCAPE") {
-                if (this[record.payload.escapeFn]) {
-                    this[record.payload.escapeFn].apply(this, record.payload.escapePayload);
+        this.viewExt = new PointS();
+        this.viewOrigin = new PointS();
+        this.wmf = wmfObject;
+        this.objectTable = new Array(wmfObject.header.numberOfObjects);
+        for (const record of wmfObject.records) {
+            if (isEscape(record)) {
+                const escapeFn = `ESACPE_${MetafileEscapes[record.escape.escapeFunction]}`;
+                if (this[escapeFn]) {
+                    this[escapeFn].apply(this, [record.escape]);
                 }
                 else {
-                    console.warn("unsupport escape fn ", record.payload.escapeFn);
+                    console.warn("unsupport escape fn ", MetafileEscapes[record.escape.escapeFunction]);
                 }
             }
             else {
-                if (this[record.fn]) {
-                    this[record.fn].apply(this, record.payload);
+                if (this[RecordType[record.recordFunction]]) {
+                    this[RecordType[record.recordFunction]].apply(this, [record]);
                 }
                 else {
-                    console.warn("unsupported record", record.fn);
+                    console.warn("unsupported record", RecordType[record.recordFunction]);
                 }
             }
         }
@@ -39,68 +44,64 @@ export class BasicPlayback {
         const nextIndex = this.objectTable.findIndex(v => !v);
         this.objectTable[nextIndex] = obj;
     }
-    META_SETWINDOWEXT(x, y) {
-        this.viewExt = { x, y };
+    META_SETWINDOWEXT(record) {
+        this.viewExt.x = record.x;
+        this.viewExt.y = record.y;
         this.updateViewBox(this.viewExt, this.viewOrigin);
     }
-    META_SETWINDOWORG(x, y) {
-        this.viewOrigin = { x, y };
+    META_SETWINDOWORG(record) {
+        this.viewOrigin.x = record.x;
+        this.viewOrigin.y = record.y;
         this.updateViewBox(this.viewExt, this.viewOrigin);
     }
-    META_SETTEXTALIGN(alignFlag) {
-        this.ctx.textAlign = alignFlag;
+    META_SETTEXTALIGN(record) {
+        this.ctx.textAlign = record.textAlignmentMode;
     }
-    META_SETTEXTCOLOR(color) {
-        this.ctx.textColor = color;
+    META_SETTEXTCOLOR(record) {
+        this.ctx.textColor = record.colorRef.valueOf();
     }
-    META_CREATEPENINDIRECT(pen) {
-        this.putObject(pen);
+    META_CREATEPENINDIRECT(record) {
+        this.putObject(record.pen);
     }
-    META_SETPOLYFILLMODE(mode) {
-        if (mode === PolyFillMode.ALTERNATE) {
+    META_SETPOLYFILLMODE(record) {
+        if (record.polyFillMode === PolyFillMode.ALTERNATE) {
             this.ctx.polyFillRule = "evenodd";
         }
-        else if (mode === PolyFillMode.WINDING) {
+        else if (record.polyFillMode === PolyFillMode.WINDING) {
             this.ctx.polyFillRule = "nonzero";
         }
     }
-    META_SETMAPMODE(mode) {
-        console.log("set map mode", MapMode[mode]);
+    META_SETMAPMODE(record) {
+        console.log("set map mode", MapMode[record.mapMode]);
     }
-    META_SETBKMODE(mode) {
-        console.log("set mix mode", MixMode[mode]);
+    META_SETBKMODE(record) {
+        console.log("set mix mode", MixMode[record.BkMode]);
     }
-    META_SETROP2(drawMode) {
-        console.log("set draw mode", BinaryRasterOperation[drawMode]);
+    META_SETROP2(record) {
+        console.log("set draw mode", BinaryRasterOperation[record.drawMode]);
     }
-    META_ESCAPE(fn, data) {
-        console.log("escape", MetafileEscapes[fn], data);
-    }
-    META_SELECTOBJECT(index) {
-        const obj = this.getObject(index);
-        if ((obj === null || obj === void 0 ? void 0 : obj.objectType) === "Pen") {
+    META_SELECTOBJECT(record) {
+        const obj = this.getObject(record.objectIndex);
+        if (obj instanceof Pen) {
             this.ctx.pen = obj;
         }
-        else if ((obj === null || obj === void 0 ? void 0 : obj.objectType) === "Brush") {
+        else if (obj instanceof LogBrush) {
             this.ctx.brush = obj;
         }
     }
-    META_CREATEBRUSHINDIRECT(logBrush) {
-        this.putObject(logBrush);
+    META_CREATEBRUSHINDIRECT(record) {
+        this.putObject(record.logBrush);
     }
-    META_DELETEOBJECT(index) {
-        this.objectTable[index] = undefined;
+    META_DELETEOBJECT(record) {
+        this.objectTable[record.objectIndex] = undefined;
     }
     META_EOF() {
         console.log("end");
     }
-    META_POLYGON(points) {
-        this.drawPolygon(points);
+    META_POLYGON(record) {
+        this.drawPolygon(record.aPoints);
     }
-    SETMITERLIMIT(miterLimit) {
-        this.ctx.miterLimit = miterLimit;
-    }
-    META_SETBKCOLOR(color) {
-        this.ctx.backgroundColor = color;
+    ESCAPE_SETMITERLIMIT(escape) {
+        this.ctx.miterLimit = escape.miterLimit;
     }
 }

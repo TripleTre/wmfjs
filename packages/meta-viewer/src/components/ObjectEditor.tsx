@@ -1,5 +1,5 @@
 import styled from "styled-components";
-import React from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { EditConfig } from "../help";
 import { EnumEditor } from "./EnumEditor";
 import { NumberEditor } from "./NumberEditor";
@@ -24,11 +24,20 @@ const Label = styled.div<{ l: number }>`
   color: rgb(186, 186, 186);
   width: ${props => props.l * 12}px;
   font-size: 15px;
+  display: flex;
+  align-items: center;
+  flex: 0 0 auto;
+`;
+
+const EditorContainer = styled.div`
+  flex: 1 1 auto;
 `;
 
 export interface ObjectEditorProps {
     value: any;
     config: { [ key: string ]: EditConfig };
+    onChange?: (value: any) => void;
+    editable?: boolean;
 }
 
 export function ObjectEditor(props: ObjectEditorProps) {
@@ -42,36 +51,53 @@ export function ObjectEditor(props: ObjectEditorProps) {
                 {keys.map(key => {
                     let editor = null;
                     const config = props.config[ key ];
+
+                    const commonProps = {
+                        value: props.value[ key ],
+                        editable: config.editable,
+                        onChange: (value: any) => {
+                            const next = {
+                                ...props.value,
+                                [key]: value,
+                            };
+                            if (props.onChange && props.editable) {
+                                props.onChange(next);
+                            }
+                        }
+                    };
+
                     if (config.type === "enum") {
                         editor = React.createElement(EnumEditor, {
                             enum: config.enum,
-                            value: props.value[ key ],
-                            editable: false,
+                            multi: config.multi,
+                            ...commonProps,
                         });
                     } else if (config.type === "number") {
                         editor = React.createElement(NumberEditor, {
-                            value: props.value[ key ],
-                            editable: false,
+                            ...commonProps,
                         });
                     } else if (config.type === "object") {
                         editor = React.createElement(ObjectEditor, {
-                            value: props.value[ key ],
                             // @ts-ignore
                             config: props.config[ key ].config,
+                            ...commonProps,
                         });
                     } else if (config.type === "color") {
                         editor = React.createElement(ColorEditor, {
-                            value: props.value[ key ],
+                            ...commonProps,
                         });
                     } else if (config.type === "point") {
                         editor = React.createElement(PointEditor, {
-                            value: props.value[ key ],
+                            ...commonProps,
                         });
                     }
-
                     return (<ContentItem key={key}>
-                        <Label l={maxLength}>{key}</Label>
-                        {editor}
+                        <Label l={maxLength}>
+                            <span>{key}</span>
+                        </Label>
+                        <EditorContainer>
+                            {editor}
+                        </EditorContainer>
                     </ContentItem>);
                 })}
             </Content>

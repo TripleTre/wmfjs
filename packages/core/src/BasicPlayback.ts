@@ -1,37 +1,60 @@
-import { IPlayback, IPlaybackCtx } from "./IPlayback";
-import { Header, Placeable } from "./types";
-import { LogBrush, Pen, PointS, WMFObject } from "./structs";
+import { IPlaybackCtx } from "./IPlayback";
 import { BinaryRasterOperation, MapMode, MetafileEscapes, MixMode, PolyFillMode, RecordType } from "./enums";
-import { RecordsData } from "./parser";
+import { WMF } from "./WMF";
+import { SerializableRecord } from "./Serializable";
+import { META_ESCAPE } from "./records/META_ESCAPE";
+import { META_SETWINDOWEXT } from "./records/META_SETWINDOWEXT";
+import { META_SETWINDOWORG } from "./records/META_SETWINDOWORG";
+import { META_SETTEXTALIGN } from "./records/META_SETTEXTALIGN";
+import { META_SETTEXTCOLOR } from "./records/META_SETTEXTCOLOR";
+import { META_CREATEPENINDIRECT } from "./records/META_CREATEPENINDIRECT";
+import { Pen } from "./structs/Pen";
+import { LogBrush } from "./structs/LogBrush";
+import { PointS } from "./structs/PointS";
+import { META_SETPOLYFILLMODE } from "./records/META_SETPOLYFILLMODE";
+import { META_SETMAPMODE } from "./records/META_SETMAPMODE";
+import { META_SETBKMODE } from "./records/META_SETBKMODE";
+import { META_SETROP2 } from "./records/META_SETROP2";
+import { META_SELECTOBJECT } from "./records/META_SELECTOBJECT";
+import { META_CREATEBRUSHINDIRECT } from "./records/META_CREATEBRUSHINDIRECT";
+import { META_DELETEOBJECT } from "./records/META_DELETEOBJECT";
+import { META_POLYGON } from "./records/META_POLYGON";
+import { SETMITERLIMIT } from "./escapes/SETMITERLIMIT";
 
-export abstract class BasicPlayback implements IPlayback {
+export function isEscape(record: SerializableRecord): record is META_ESCAPE {
+    return record.recordFunction === RecordType.META_ESCAPE;
+}
 
-    protected header!: Header;
-    protected placeable?: Placeable;
+export type WMFObject = Pen | LogBrush;
+
+export abstract class BasicPlayback {
+
+    protected wmf: WMF;
     protected ctx: IPlaybackCtx = Object.create(null);
 
     private objectTable: (WMFObject | undefined)[] = [];
-    private viewExt: PointS = { x: 0, y: 0 };
-    private viewOrigin: PointS = { x: 0, y: 0 };
+    private viewExt: PointS = new PointS();
+    private viewOrigin: PointS = new PointS();
 
     protected abstract updateViewBox(ext: PointS, origin: PointS): void;
     protected abstract drawPolygon(points: PointS[]): void;
 
-    public init(recordsData: RecordsData): void {
-        this.header = recordsData.header;
-        this.objectTable = new Array(recordsData.header.numberOfObjects);
-        for (const record of recordsData.records) {
-            if (record.fn === "META_ESCAPE") {
-                if ((this as any)[record.payload.escapeFn]) {
-                    (this as any)[record.payload.escapeFn].apply(this, record.payload.escapePayload);
+    public constructor(wmfObject: WMF) {
+        this.wmf = wmfObject;
+        this.objectTable = new Array(wmfObject.header.numberOfObjects);
+        for (const record of wmfObject.records) {
+            if (isEscape(record)) {
+                const escapeFn = `ESACPE_${MetafileEscapes[record.escape.escapeFunction]}`;
+                if ((this as any)[escapeFn]) {
+                    (this as any)[escapeFn].apply(this, [record.escape]);
                 } else {
-                    console.warn("unsupport escape fn ", record.payload.escapeFn);
+                    console.warn("unsupport escape fn ", MetafileEscapes[record.escape.escapeFunction]);
                 }
             } else {
-                if ((this as any)[record.fn]) {
-                    (this as any)[record.fn].apply(this, record.payload);
+                if ((this as any)[RecordType[record.recordFunction]]) {
+                    (this as any)[RecordType[record.recordFunction]].apply(this, [record]);
                 } else {
-                    console.warn("unsupported record", record.fn);
+                    console.warn("unsupported record", RecordType[record.recordFunction]);
                 }
             }
         }
@@ -50,82 +73,76 @@ export abstract class BasicPlayback implements IPlayback {
         this.objectTable[nextIndex] = obj;
     }
 
-    META_SETWINDOWEXT(x: number, y: number): void {
-        this.viewExt = { x, y };
+    META_SETWINDOWEXT(record: META_SETWINDOWEXT): void {
+        this.viewExt.x = record.x;
+        this.viewExt.y = record.y;
         this.updateViewBox(this.viewExt, this.viewOrigin);
     }
 
-    META_SETWINDOWORG(x: number, y: number): void {
-        this.viewOrigin = { x, y };
+    META_SETWINDOWORG(record: META_SETWINDOWORG): void {
+        this.viewOrigin.x = record.x;
+        this.viewOrigin.y = record.y;
         this.updateViewBox(this.viewExt, this.viewOrigin);
     }
 
-    META_SETTEXTALIGN(alignFlag: number): void {
-        this.ctx.textAlign = alignFlag;
+    META_SETTEXTALIGN(record: META_SETTEXTALIGN): void {
+        this.ctx.textAlign = record.textAlignmentMode;
     }
 
-    META_SETTEXTCOLOR(color: number): void {
-        this.ctx.textColor = color;
+    META_SETTEXTCOLOR(record: META_SETTEXTCOLOR): void {
+        this.ctx.textColor = record.colorRef.valueOf();
     }
 
-    META_CREATEPENINDIRECT(pen: Pen): void {
-        this.putObject(pen);
+    META_CREATEPENINDIRECT(record: META_CREATEPENINDIRECT): void {
+        this.putObject(record.pen);
     }
 
-    META_SETPOLYFILLMODE(mode: PolyFillMode): void {
-        if (mode === PolyFillMode.ALTERNATE) {
+    META_SETPOLYFILLMODE(record: META_SETPOLYFILLMODE): void {
+        if (record.polyFillMode === PolyFillMode.ALTERNATE) {
             this.ctx.polyFillRule = "evenodd";
-        } else if (mode === PolyFillMode.WINDING) {
+        } else if (record.polyFillMode === PolyFillMode.WINDING) {
             this.ctx.polyFillRule = "nonzero"
         }
     }
 
-    META_SETMAPMODE(mode: MapMode): void {
-        console.log("set map mode", MapMode[mode]);
+    META_SETMAPMODE(record: META_SETMAPMODE): void {
+        console.log("set map mode", MapMode[record.mapMode]);
     }
 
-    META_SETBKMODE(mode: MixMode): void {
-        console.log("set mix mode", MixMode[mode]);
+    META_SETBKMODE(record: META_SETBKMODE): void {
+        console.log("set mix mode", MixMode[record.BkMode]);
     }
 
-    META_SETROP2(drawMode: BinaryRasterOperation): void {
-        console.log("set draw mode", BinaryRasterOperation[drawMode]);
+    META_SETROP2(record: META_SETROP2): void {
+        console.log("set draw mode", BinaryRasterOperation[record.drawMode]);
     }
 
-    META_ESCAPE(fn: MetafileEscapes, data: ArrayBuffer): void {
-        console.log("escape", MetafileEscapes[fn], data);
-    }
-
-    META_SELECTOBJECT(index: number): void {
-        const obj = this.getObject(index);
-        if (obj?.objectType === "Pen") {
+    META_SELECTOBJECT(record: META_SELECTOBJECT): void {
+        const obj = this.getObject(record.objectIndex);
+        if (obj instanceof Pen) {
             this.ctx.pen = obj;
-        } else if (obj?.objectType === "Brush") {
+        } else if (obj instanceof LogBrush) {
             this.ctx.brush = obj;
         }
     }
 
-    META_CREATEBRUSHINDIRECT(logBrush: LogBrush): void {
-        this.putObject(logBrush);
+    META_CREATEBRUSHINDIRECT(record: META_CREATEBRUSHINDIRECT): void {
+        this.putObject(record.logBrush);
     }
 
-    META_DELETEOBJECT(index: number): void {
-        this.objectTable[index] = undefined;
+    META_DELETEOBJECT(record: META_DELETEOBJECT): void {
+        this.objectTable[record.objectIndex] = undefined;
     }
 
     META_EOF(): void {
         console.log("end");
     }
 
-    META_POLYGON(points: PointS[]): void {
-        this.drawPolygon(points);
+    META_POLYGON(record: META_POLYGON): void {
+        this.drawPolygon(record.aPoints);
     }
 
-    SETMITERLIMIT(miterLimit: number): void {
-        this.ctx.miterLimit = miterLimit;
-    }
-
-    META_SETBKCOLOR(color: number): void {
-        this.ctx.backgroundColor = color;
+    ESCAPE_SETMITERLIMIT(escape: SETMITERLIMIT): void {
+        this.ctx.miterLimit = escape.miterLimit;
     }
 }

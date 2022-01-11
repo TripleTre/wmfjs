@@ -28,11 +28,9 @@ export const records = {
         const points = [];
         offset += 2;
         for (let i = 0; i < numberOfPoints; i++) {
-            points.push(pointS(buf, offset)[0]);
+            points.push(pointS(buf, offset));
             offset += 4;
         }
-        return [
-            points
-        ];
+        return points;
     },
 };

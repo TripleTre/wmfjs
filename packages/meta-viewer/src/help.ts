@@ -8,7 +8,7 @@ export type EditType = "number" | "string" | "enum";
 
 export type Editable = { editable: boolean };
 export type LiteralConfig = { type: "number" | "string" | "color" | "point" };
-export type EnumConfig = { type: "enum", enum: any };
+export type EnumConfig = { type: "enum", enum: any, multi?: boolean };
 export type ObjectConfig = { type: "object", config: { [ key: string ]: EditConfig } };
 
 export type EditConfig = (LiteralConfig | EnumConfig | ObjectConfig) & Editable;

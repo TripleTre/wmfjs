@@ -1,3 +1,4 @@
+"use strict";
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
@@ -7,44 +8,45 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
-import { SerializableEscape } from "../Serializable";
-import { LiteralType, serialize } from "../decorators";
-import { MetafileEscapes } from "../enums";
-export class SETMITERLIMIT extends SerializableEscape {
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.SETMITERLIMIT = void 0;
+const Serializable_1 = require("../Serializable");
+const decorators_1 = require("../decorators");
+const enums_1 = require("../enums");
+class SETMITERLIMIT extends Serializable_1.SerializableEscape {
     constructor() {
         super(...arguments);
-        this.escapeFunction = MetafileEscapes.SETMITERLIMIT;
-        this.miterLimit = 5;
+        this.escapeFunction = enums_1.MetafileEscapes.SETMITERLIMIT;
+        this.miterLimit = 4;
     }
     get byteCount() {
         return this.escapeData.byteLength;
     }
-    set byteCount(v) { }
     get escapeData() {
-        const buf = new Int32Array(1);
-        buf[0] = this.miterLimit;
-        return buf.buffer;
+        const buf = new ArrayBuffer(4);
+        const view = new DataView(buf);
+        view.setInt32(0, this.miterLimit, true);
+        return buf;
     }
     ;
     set escapeData(buf) {
         const view = new DataView(buf);
         this.miterLimit = view.getUint32(0, true);
     }
-    get byteSize() {
-        return 2 + 2 + this.escapeData.byteLength;
-    }
 }
 __decorate([
-    serialize(LiteralType.uint16),
+    (0, decorators_1.serialize)(decorators_1.LiteralType.uint16),
     __metadata("design:type", Number)
 ], SETMITERLIMIT.prototype, "escapeFunction", void 0);
 __decorate([
-    serialize(LiteralType.uint16),
+    decorators_1.readonly,
+    (0, decorators_1.serialize)(decorators_1.LiteralType.uint16),
     __metadata("design:type", Number),
-    __metadata("design:paramtypes", [Number])
+    __metadata("design:paramtypes", [])
 ], SETMITERLIMIT.prototype, "byteCount", null);
 __decorate([
-    serialize(),
+    (0, decorators_1.serialize)(),
     __metadata("design:type", ArrayBuffer),
     __metadata("design:paramtypes", [ArrayBuffer])
 ], SETMITERLIMIT.prototype, "escapeData", null);
+exports.SETMITERLIMIT = SETMITERLIMIT;

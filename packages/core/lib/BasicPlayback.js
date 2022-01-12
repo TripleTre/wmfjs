@@ -1,34 +1,39 @@
-import { BinaryRasterOperation, MapMode, MetafileEscapes, MixMode, PolyFillMode, RecordType } from "./enums";
-import { Pen } from "./structs/Pen";
-import { LogBrush } from "./structs/LogBrush";
-import { PointS } from "./structs/PointS";
-export function isEscape(record) {
-    return record.recordFunction === RecordType.META_ESCAPE;
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.BasicPlayback = exports.isEscape = void 0;
+const enums_1 = require("./enums");
+const structs_1 = require("./structs");
+const utils_1 = require("./utils");
+function isEscape(record) {
+    return record.recordFunction === enums_1.RecordType.META_ESCAPE;
 }
-export class BasicPlayback {
+exports.isEscape = isEscape;
+class BasicPlayback {
     constructor(wmfObject) {
         this.ctx = Object.create(null);
         this.objectTable = [];
-        this.viewExt = new PointS();
-        this.viewOrigin = new PointS();
+        this.viewExt = new structs_1.PointS();
+        this.viewOrigin = new structs_1.PointS();
         this.wmf = wmfObject;
         this.objectTable = new Array(wmfObject.header.numberOfObjects);
-        for (const record of wmfObject.records) {
+    }
+    display() {
+        for (const record of this.wmf.records) {
             if (isEscape(record)) {
-                const escapeFn = `ESACPE_${MetafileEscapes[record.escape.escapeFunction]}`;
+                const escapeFn = `ESACPE_${enums_1.MetafileEscapes[record.escape.escapeFunction]}`;
                 if (this[escapeFn]) {
                     this[escapeFn].apply(this, [record.escape]);
                 }
                 else {
-                    console.warn("unsupport escape fn ", MetafileEscapes[record.escape.escapeFunction]);
+                    console.warn("unsupport escape fn ", enums_1.MetafileEscapes[record.escape.escapeFunction]);
                 }
             }
             else {
-                if (this[RecordType[record.recordFunction]]) {
-                    this[RecordType[record.recordFunction]].apply(this, [record]);
+                if (this[enums_1.RecordType[record.recordFunction]]) {
+                    this[enums_1.RecordType[record.recordFunction]].apply(this, [record]);
                 }
                 else {
-                    console.warn("unsupported record", RecordType[record.recordFunction]);
+                    console.warn("unsupported record", enums_1.RecordType[record.recordFunction]);
                 }
             }
         }
@@ -64,28 +69,28 @@ export class BasicPlayback {
         this.putObject(record.pen);
     }
     META_SETPOLYFILLMODE(record) {
-        if (record.polyFillMode === PolyFillMode.ALTERNATE) {
+        if (record.polyFillMode === enums_1.PolyFillMode.ALTERNATE) {
             this.ctx.polyFillRule = "evenodd";
         }
-        else if (record.polyFillMode === PolyFillMode.WINDING) {
+        else if (record.polyFillMode === enums_1.PolyFillMode.WINDING) {
             this.ctx.polyFillRule = "nonzero";
         }
     }
     META_SETMAPMODE(record) {
-        console.log("set map mode", MapMode[record.mapMode]);
+        console.log("set map mode", enums_1.MapMode[record.mapMode]);
     }
     META_SETBKMODE(record) {
-        console.log("set mix mode", MixMode[record.BkMode]);
+        console.log("set mix mode", enums_1.MixMode[record.BkMode]);
     }
     META_SETROP2(record) {
-        console.log("set draw mode", BinaryRasterOperation[record.drawMode]);
+        console.log("set draw mode", enums_1.BinaryRasterOperation[record.drawMode]);
     }
     META_SELECTOBJECT(record) {
         const obj = this.getObject(record.objectIndex);
-        if (obj instanceof Pen) {
+        if (obj instanceof structs_1.Pen) {
             this.ctx.pen = obj;
         }
-        else if (obj instanceof LogBrush) {
+        else if (obj instanceof structs_1.LogBrush) {
             this.ctx.brush = obj;
         }
     }
@@ -104,4 +109,29 @@ export class BasicPlayback {
     ESCAPE_SETMITERLIMIT(escape) {
         this.ctx.miterLimit = escape.miterLimit;
     }
+    META_ARC(record) {
+        const { leftRect, rightRect, topRect, bottomRect, xStartArc, yStartArc, xEndArc, yEndArc } = record;
+        const cx = (leftRect + rightRect) / 2;
+        const cy = (topRect + bottomRect) / 2;
+        const rx = (rightRect - leftRect) / 2;
+        const ry = (bottomRect - topRect) / 2;
+        const sx = xStartArc - cx;
+        const sy = cy - yStartArc;
+        const stAngle = (0, utils_1.centerAngle)(sx, sy);
+        const ex = xEndArc - cx;
+        const ey = cy - yEndArc;
+        const enAngle = (0, utils_1.centerAngle)(ex, ey);
+        let swAngle = enAngle - stAngle;
+        while (swAngle < 0) {
+            swAngle += Math.PI * 2;
+        }
+        console.log(stAngle / Math.PI * 180);
+        console.log(enAngle / Math.PI * 180);
+        this.drawArc({
+            cx, cy, rx, ry,
+            stAngle: stAngle,
+            swAngle,
+        });
+    }
 }
+exports.BasicPlayback = BasicPlayback;

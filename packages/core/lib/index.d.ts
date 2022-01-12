@@ -1,8 +1,10 @@
 import "reflect-metadata";
 export type { IPlaybackCtx } from "./IPlayback";
-export * from "./parser";
 export * from "./BasicPlayback";
 export * from "./enums";
 export * from "./types";
-export * from "./WMF";
+export * from "./WindowsMetaFile";
 export * from "./structs";
+export * from "./Serializable";
+export * from "./decorators";
+export * from "./records";

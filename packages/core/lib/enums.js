@@ -1,16 +1,19 @@
-export var MetafileType;
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.TextAlign = exports.HatchStyle = exports.BrushStyle = exports.PenStyle = exports.MetafileEscapes = exports.BinaryRasterOperation = exports.PolyFillMode = exports.MixMode = exports.MapMode = exports.RecordType = exports.MetafileVersion = exports.MetafileType = void 0;
+var MetafileType;
 (function (MetafileType) {
     MetafileType[MetafileType["MEMORYMETAFILE"] = 1] = "MEMORYMETAFILE";
     MetafileType[MetafileType["DISKMETAFILE"] = 2] = "DISKMETAFILE";
-})(MetafileType || (MetafileType = {}));
+})(MetafileType = exports.MetafileType || (exports.MetafileType = {}));
 ;
-export var MetafileVersion;
+var MetafileVersion;
 (function (MetafileVersion) {
     MetafileVersion[MetafileVersion["META_VERSION100"] = 256] = "META_VERSION100";
     MetafileVersion[MetafileVersion["META_VERSION300"] = 768] = "META_VERSION300";
-})(MetafileVersion || (MetafileVersion = {}));
+})(MetafileVersion = exports.MetafileVersion || (exports.MetafileVersion = {}));
 ;
-export var RecordType;
+var RecordType;
 (function (RecordType) {
     RecordType[RecordType["META_EOF"] = 0] = "META_EOF";
     RecordType[RecordType["META_REALIZEPALETTE"] = 53] = "META_REALIZEPALETTE";
@@ -82,9 +85,9 @@ export var RecordType;
     RecordType[RecordType["META_CREATEFONTINDIRECT"] = 763] = "META_CREATEFONTINDIRECT";
     RecordType[RecordType["META_CREATEBRUSHINDIRECT"] = 764] = "META_CREATEBRUSHINDIRECT";
     RecordType[RecordType["META_CREATEREGION"] = 1791] = "META_CREATEREGION";
-})(RecordType || (RecordType = {}));
+})(RecordType = exports.RecordType || (exports.RecordType = {}));
 ;
-export var MapMode;
+var MapMode;
 (function (MapMode) {
     MapMode[MapMode["MM_TEXT"] = 1] = "MM_TEXT";
     MapMode[MapMode["MM_LOMETRIC"] = 2] = "MM_LOMETRIC";
@@ -94,21 +97,21 @@ export var MapMode;
     MapMode[MapMode["MM_TWIPS"] = 6] = "MM_TWIPS";
     MapMode[MapMode["MM_ISOTROPIC"] = 7] = "MM_ISOTROPIC";
     MapMode[MapMode["MM_ANISOTROPIC"] = 8] = "MM_ANISOTROPIC";
-})(MapMode || (MapMode = {}));
+})(MapMode = exports.MapMode || (exports.MapMode = {}));
 ;
-export var MixMode;
+var MixMode;
 (function (MixMode) {
     MixMode[MixMode["TRANSPARENT"] = 1] = "TRANSPARENT";
     MixMode[MixMode["OPAQUE"] = 2] = "OPAQUE";
-})(MixMode || (MixMode = {}));
+})(MixMode = exports.MixMode || (exports.MixMode = {}));
 ;
-export var PolyFillMode;
+var PolyFillMode;
 (function (PolyFillMode) {
     PolyFillMode[PolyFillMode["ALTERNATE"] = 1] = "ALTERNATE";
     PolyFillMode[PolyFillMode["WINDING"] = 2] = "WINDING";
-})(PolyFillMode || (PolyFillMode = {}));
+})(PolyFillMode = exports.PolyFillMode || (exports.PolyFillMode = {}));
 ;
-export var BinaryRasterOperation;
+var BinaryRasterOperation;
 (function (BinaryRasterOperation) {
     BinaryRasterOperation[BinaryRasterOperation["R2_BLACK"] = 1] = "R2_BLACK";
     BinaryRasterOperation[BinaryRasterOperation["R2_NOTMERGEPEN"] = 2] = "R2_NOTMERGEPEN";
@@ -126,9 +129,9 @@ export var BinaryRasterOperation;
     BinaryRasterOperation[BinaryRasterOperation["R2_MERGEPENNOT"] = 14] = "R2_MERGEPENNOT";
     BinaryRasterOperation[BinaryRasterOperation["R2_MERGEPEN"] = 15] = "R2_MERGEPEN";
     BinaryRasterOperation[BinaryRasterOperation["R2_WHITE"] = 16] = "R2_WHITE";
-})(BinaryRasterOperation || (BinaryRasterOperation = {}));
+})(BinaryRasterOperation = exports.BinaryRasterOperation || (exports.BinaryRasterOperation = {}));
 ;
-export var MetafileEscapes;
+var MetafileEscapes;
 (function (MetafileEscapes) {
     MetafileEscapes[MetafileEscapes["NEWFRAME"] = 1] = "NEWFRAME";
     MetafileEscapes[MetafileEscapes["ABORTDOC"] = 2] = "ABORTDOC";
@@ -190,9 +193,9 @@ export var MetafileEscapes;
     MetafileEscapes[MetafileEscapes["GET_PS_FEATURESETTING"] = 4121] = "GET_PS_FEATURESETTING";
     MetafileEscapes[MetafileEscapes["MXDC_ESCAPE"] = 4122] = "MXDC_ESCAPE";
     MetafileEscapes[MetafileEscapes["SPCLPASSTHROUGH2"] = 4568] = "SPCLPASSTHROUGH2";
-})(MetafileEscapes || (MetafileEscapes = {}));
+})(MetafileEscapes = exports.MetafileEscapes || (exports.MetafileEscapes = {}));
 ;
-export var PenStyle;
+var PenStyle;
 (function (PenStyle) {
     PenStyle[PenStyle["PS_COSMETIC"] = 0] = "PS_COSMETIC";
     PenStyle[PenStyle["PS_ENDCAP_ROUND"] = 0] = "PS_ENDCAP_ROUND";
@@ -210,9 +213,9 @@ export var PenStyle;
     PenStyle[PenStyle["PS_ENDCAP_FLAT"] = 512] = "PS_ENDCAP_FLAT";
     PenStyle[PenStyle["PS_JOIN_BEVEL"] = 4096] = "PS_JOIN_BEVEL";
     PenStyle[PenStyle["PS_JOIN_MITER"] = 8192] = "PS_JOIN_MITER";
-})(PenStyle || (PenStyle = {}));
+})(PenStyle = exports.PenStyle || (exports.PenStyle = {}));
 ;
-export var BrushStyle;
+var BrushStyle;
 (function (BrushStyle) {
     BrushStyle[BrushStyle["BS_SOLID"] = 0] = "BS_SOLID";
     BrushStyle[BrushStyle["BS_NULL"] = 1] = "BS_NULL";
@@ -224,9 +227,9 @@ export var BrushStyle;
     BrushStyle[BrushStyle["BS_PATTERN8X8"] = 7] = "BS_PATTERN8X8";
     BrushStyle[BrushStyle["BS_DIBPATTERN8X8"] = 8] = "BS_DIBPATTERN8X8";
     BrushStyle[BrushStyle["BS_MONOPATTERN"] = 9] = "BS_MONOPATTERN";
-})(BrushStyle || (BrushStyle = {}));
+})(BrushStyle = exports.BrushStyle || (exports.BrushStyle = {}));
 ;
-export var HatchStyle;
+var HatchStyle;
 (function (HatchStyle) {
     HatchStyle[HatchStyle["HS_HORIZONTAL"] = 0] = "HS_HORIZONTAL";
     HatchStyle[HatchStyle["HS_VERTICAL"] = 1] = "HS_VERTICAL";
@@ -234,9 +237,9 @@ export var HatchStyle;
     HatchStyle[HatchStyle["HS_BDIAGONAL"] = 3] = "HS_BDIAGONAL";
     HatchStyle[HatchStyle["HS_CROSS"] = 4] = "HS_CROSS";
     HatchStyle[HatchStyle["HS_DIAGCROSS"] = 5] = "HS_DIAGCROSS";
-})(HatchStyle || (HatchStyle = {}));
+})(HatchStyle = exports.HatchStyle || (exports.HatchStyle = {}));
 ;
-export var TextAlign;
+var TextAlign;
 (function (TextAlign) {
     TextAlign[TextAlign["TA_NOUPDATECP"] = 0] = "TA_NOUPDATECP";
     TextAlign[TextAlign["TA_LEFT"] = 0] = "TA_LEFT";
@@ -247,5 +250,5 @@ export var TextAlign;
     TextAlign[TextAlign["TA_BOTTOM"] = 8] = "TA_BOTTOM";
     TextAlign[TextAlign["TA_BASELINE"] = 24] = "TA_BASELINE";
     TextAlign[TextAlign["TA_RTLREADING"] = 256] = "TA_RTLREADING";
-})(TextAlign || (TextAlign = {}));
+})(TextAlign = exports.TextAlign || (exports.TextAlign = {}));
 ;

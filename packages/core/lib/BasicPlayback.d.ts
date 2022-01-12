@@ -1,35 +1,30 @@
 import { IPlaybackCtx } from "./IPlayback";
-import { WMF } from "./WMF";
+import { WindowsMetaFile } from "./WindowsMetaFile";
 import { SerializableRecord } from "./Serializable";
-import { META_ESCAPE } from "./records/META_ESCAPE";
-import { META_SETWINDOWEXT } from "./records/META_SETWINDOWEXT";
-import { META_SETWINDOWORG } from "./records/META_SETWINDOWORG";
-import { META_SETTEXTALIGN } from "./records/META_SETTEXTALIGN";
-import { META_SETTEXTCOLOR } from "./records/META_SETTEXTCOLOR";
-import { META_CREATEPENINDIRECT } from "./records/META_CREATEPENINDIRECT";
-import { Pen } from "./structs/Pen";
-import { LogBrush } from "./structs/LogBrush";
-import { PointS } from "./structs/PointS";
-import { META_SETPOLYFILLMODE } from "./records/META_SETPOLYFILLMODE";
-import { META_SETMAPMODE } from "./records/META_SETMAPMODE";
-import { META_SETBKMODE } from "./records/META_SETBKMODE";
-import { META_SETROP2 } from "./records/META_SETROP2";
-import { META_SELECTOBJECT } from "./records/META_SELECTOBJECT";
-import { META_CREATEBRUSHINDIRECT } from "./records/META_CREATEBRUSHINDIRECT";
-import { META_DELETEOBJECT } from "./records/META_DELETEOBJECT";
-import { META_POLYGON } from "./records/META_POLYGON";
-import { SETMITERLIMIT } from "./escapes/SETMITERLIMIT";
+import { META_ESCAPE, META_SETWINDOWEXT, META_SETWINDOWORG, META_SETTEXTALIGN, META_SETTEXTCOLOR, META_CREATEPENINDIRECT, META_SETPOLYFILLMODE, META_SETMAPMODE, META_SETBKMODE, META_SETROP2, META_SELECTOBJECT, META_CREATEBRUSHINDIRECT, META_DELETEOBJECT, META_POLYGON, META_ARC } from "./records";
+import { Pen, LogBrush, PointS } from "./structs";
+import { SETMITERLIMIT } from "./escapes";
 export declare function isEscape(record: SerializableRecord): record is META_ESCAPE;
 export declare type WMFObject = Pen | LogBrush;
+export declare type CenteredArc = {
+    cx: number;
+    cy: number;
+    rx: number;
+    ry: number;
+    stAngle: number;
+    swAngle: number;
+};
 export declare abstract class BasicPlayback {
-    protected wmf: WMF;
+    protected wmf: WindowsMetaFile;
     protected ctx: IPlaybackCtx;
     private objectTable;
     private viewExt;
     private viewOrigin;
     protected abstract updateViewBox(ext: PointS, origin: PointS): void;
     protected abstract drawPolygon(points: PointS[]): void;
-    constructor(wmfObject: WMF);
+    protected abstract drawArc(arc: CenteredArc): void;
+    constructor(wmfObject: WindowsMetaFile);
+    display(): void;
     protected getObject(index: number): WMFObject | null;
     protected putObject(obj: any): void;
     META_SETWINDOWEXT(record: META_SETWINDOWEXT): void;
@@ -47,4 +42,5 @@ export declare abstract class BasicPlayback {
     META_EOF(): void;
     META_POLYGON(record: META_POLYGON): void;
     ESCAPE_SETMITERLIMIT(escape: SETMITERLIMIT): void;
+    META_ARC(record: META_ARC): void;
 }

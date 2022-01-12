@@ -1,6 +1,6 @@
 import { Serializable } from "../Serializable";
 export declare class ColorRef extends Serializable {
-    readonly byteSize: number;
+    get byteSize(): number;
     r: number;
     g: number;
     b: number;

@@ -1,9 +1,12 @@
-import { LiteralType, serialize } from "../decorators";
+import { LiteralType, readonly, serialize } from "../decorators";
 import { Serializable } from "../Serializable";
 
 export class Rect extends Serializable {
 
-    public readonly byteSize: number = 8;
+    @readonly
+    public get byteSize(): number {
+        return 8;
+    };
 
     @serialize(LiteralType.int16)
     public left: number = 0;

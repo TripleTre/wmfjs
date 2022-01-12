@@ -1,3 +1,4 @@
+"use strict";
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
@@ -7,23 +8,31 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
-import { SerializableRecord } from "../Serializable";
-import { LiteralType, serialize } from "../decorators";
-import { RecordType } from "../enums";
-import { SETMITERLIMIT } from "../escapes/SETMITERLIMIT";
-export class META_ESCAPE extends SerializableRecord {
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.META_ESCAPE = void 0;
+const Serializable_1 = require("../Serializable");
+const decorators_1 = require("../decorators");
+const enums_1 = require("../enums");
+const SETMITERLIMIT_1 = require("../escapes/SETMITERLIMIT");
+class META_ESCAPE extends Serializable_1.SerializableRecord {
     constructor() {
         super(...arguments);
-        this.recordSize = 0;
-        this.recordFunction = RecordType.META_ESCAPE;
-        this.escape = new SETMITERLIMIT();
+        this.recordFunction = enums_1.RecordType.META_ESCAPE;
+        this.escape = new SETMITERLIMIT_1.SETMITERLIMIT();
     }
+    get recordSize() {
+        return (4 + 2 + this.escape.byteSize) / Serializable_1.BYTE_PER_WORD;
+    }
+    ;
 }
 __decorate([
-    serialize(LiteralType.uint32),
-    __metadata("design:type", Number)
-], META_ESCAPE.prototype, "recordSize", void 0);
+    decorators_1.readonly,
+    (0, decorators_1.serialize)(decorators_1.LiteralType.uint32),
+    __metadata("design:type", Number),
+    __metadata("design:paramtypes", [])
+], META_ESCAPE.prototype, "recordSize", null);
 __decorate([
-    serialize(LiteralType.uint16),
+    (0, decorators_1.serialize)(decorators_1.LiteralType.uint16),
     __metadata("design:type", Number)
 ], META_ESCAPE.prototype, "recordFunction", void 0);
+exports.META_ESCAPE = META_ESCAPE;

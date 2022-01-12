@@ -1,15 +1,15 @@
-import { SerializableRecord } from "../Serializable";
-import { LiteralType, serialize } from "../decorators";
+import { BYTE_PER_WORD, SerializableRecord } from "../Serializable";
+import { LiteralType, readonly, serialize } from "../decorators";
 import { RecordType } from "../enums";
 import { PointS } from "../structs/PointS";
 
 export class META_POLYGON extends SerializableRecord {
 
+    @readonly
     @serialize(LiteralType.uint32)
     public get recordSize(): number {
-        return 4 + 2 + 2 + (this.numberOfPoints * 4);
+        return (4 + 2 + 2 + (this.numberOfPoints * 4)) / BYTE_PER_WORD;
     };
-    public set recordSize(v: number) {}
 
     @serialize(LiteralType.uint16)
     public readonly recordFunction: RecordType = RecordType.META_POLYGON;

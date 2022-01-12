@@ -1,10 +1,13 @@
 import { Rect } from "../structs/Rect";
-import { LiteralType, serialize } from "../decorators";
+import { LiteralType, readonly, serialize } from "../decorators";
 import { Serializable } from "../Serializable";
 
 export class META_PLACEABLE extends Serializable {
 
-    public byteSize: number = 22;
+    @readonly
+    public get byteSize(): number {
+        return 22;
+    };
 
     @serialize(LiteralType.uint32)
     public readonly key: number = 0x9AC6CDD7;
@@ -19,7 +22,7 @@ export class META_PLACEABLE extends Serializable {
     public inch: number = 1200;
 
     @serialize(LiteralType.uint32)
-    public reserved: number = 0x00000000;
+    public readonly reserved: number = 0x00000000;
 
     @serialize(LiteralType.int16)
     public checksum: number = 0;

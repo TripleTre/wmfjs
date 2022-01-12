@@ -1,25 +1,16 @@
 import { IPlaybackCtx } from "./IPlayback";
 import { BinaryRasterOperation, MapMode, MetafileEscapes, MixMode, PolyFillMode, RecordType } from "./enums";
-import { WMF } from "./WMF";
+import { WindowsMetaFile } from "./WindowsMetaFile";
 import { SerializableRecord } from "./Serializable";
-import { META_ESCAPE } from "./records/META_ESCAPE";
-import { META_SETWINDOWEXT } from "./records/META_SETWINDOWEXT";
-import { META_SETWINDOWORG } from "./records/META_SETWINDOWORG";
-import { META_SETTEXTALIGN } from "./records/META_SETTEXTALIGN";
-import { META_SETTEXTCOLOR } from "./records/META_SETTEXTCOLOR";
-import { META_CREATEPENINDIRECT } from "./records/META_CREATEPENINDIRECT";
-import { Pen } from "./structs/Pen";
-import { LogBrush } from "./structs/LogBrush";
-import { PointS } from "./structs/PointS";
-import { META_SETPOLYFILLMODE } from "./records/META_SETPOLYFILLMODE";
-import { META_SETMAPMODE } from "./records/META_SETMAPMODE";
-import { META_SETBKMODE } from "./records/META_SETBKMODE";
-import { META_SETROP2 } from "./records/META_SETROP2";
-import { META_SELECTOBJECT } from "./records/META_SELECTOBJECT";
-import { META_CREATEBRUSHINDIRECT } from "./records/META_CREATEBRUSHINDIRECT";
-import { META_DELETEOBJECT } from "./records/META_DELETEOBJECT";
-import { META_POLYGON } from "./records/META_POLYGON";
-import { SETMITERLIMIT } from "./escapes/SETMITERLIMIT";
+import {
+    META_ESCAPE, META_SETWINDOWEXT, META_SETWINDOWORG, META_SETTEXTALIGN,
+    META_SETTEXTCOLOR, META_CREATEPENINDIRECT, META_SETPOLYFILLMODE,
+    META_SETMAPMODE, META_SETBKMODE, META_SETROP2, META_SELECTOBJECT,
+    META_CREATEBRUSHINDIRECT, META_DELETEOBJECT, META_POLYGON, META_ARC,
+} from "./records";
+import { Pen, LogBrush, PointS } from "./structs";
+import { SETMITERLIMIT } from "./escapes";
+import { centerAngle } from "./utils";
 
 export function isEscape(record: SerializableRecord): record is META_ESCAPE {
     return record.recordFunction === RecordType.META_ESCAPE;
@@ -27,9 +18,18 @@ export function isEscape(record: SerializableRecord): record is META_ESCAPE {
 
 export type WMFObject = Pen | LogBrush;
 
+export type CenteredArc = {
+    cx: number;
+    cy: number;
+    rx: number;
+    ry: number;
+    stAngle: number;
+    swAngle: number;
+}
+
 export abstract class BasicPlayback {
 
-    protected wmf: WMF;
+    protected wmf: WindowsMetaFile;
     protected ctx: IPlaybackCtx = Object.create(null);
 
     private objectTable: (WMFObject | undefined)[] = [];
@@ -38,11 +38,15 @@ export abstract class BasicPlayback {
 
     protected abstract updateViewBox(ext: PointS, origin: PointS): void;
     protected abstract drawPolygon(points: PointS[]): void;
+    protected abstract drawArc(arc: CenteredArc): void;
 
-    public constructor(wmfObject: WMF) {
+    public constructor(wmfObject: WindowsMetaFile) {
         this.wmf = wmfObject;
         this.objectTable = new Array(wmfObject.header.numberOfObjects);
-        for (const record of wmfObject.records) {
+    }
+
+    public display(): void {
+        for (const record of this.wmf.records) {
             if (isEscape(record)) {
                 const escapeFn = `ESACPE_${MetafileEscapes[record.escape.escapeFunction]}`;
                 if ((this as any)[escapeFn]) {
@@ -144,5 +148,34 @@ export abstract class BasicPlayback {
 
     ESCAPE_SETMITERLIMIT(escape: SETMITERLIMIT): void {
         this.ctx.miterLimit = escape.miterLimit;
+    }
+
+    META_ARC(record: META_ARC): void {
+        const { leftRect, rightRect, topRect, bottomRect, xStartArc, yStartArc, xEndArc, yEndArc } = record;
+        const cx = (leftRect + rightRect) / 2;
+        const cy = (topRect + bottomRect) / 2;
+        const rx = (rightRect - leftRect) / 2;
+        const ry = (bottomRect - topRect) / 2;
+
+        const sx = xStartArc - cx;
+        const sy = cy - yStartArc;
+        const stAngle = centerAngle(sx, sy);
+
+        const ex = xEndArc - cx;
+        const ey = cy - yEndArc;
+        const enAngle = centerAngle(ex, ey);
+
+        let swAngle = enAngle - stAngle;
+        while (swAngle < 0) {
+            swAngle += Math.PI * 2;
+        }
+        console.log(stAngle / Math.PI * 180);
+        console.log(enAngle / Math.PI * 180);
+
+        this.drawArc({
+            cx, cy, rx, ry,
+            stAngle: stAngle,
+            swAngle,
+        });
     }
 }

@@ -1,12 +1,15 @@
 import { Serializable } from "../Serializable";
 import { PenStyle } from "../enums";
-import { LiteralType, serialize } from "../decorators";
+import { LiteralType, readonly, serialize } from "../decorators";
 import { PointS } from "./PointS";
 import { ColorRef } from "./ColorRef";
 
 export class Pen extends Serializable {
 
-    public readonly byteSize: number = 8;
+    @readonly
+    public get byteSize(): number {
+        return 10;
+    };
 
     @serialize(LiteralType.uint16)
     public penStyle: PenStyle = PenStyle.PS_NULL;

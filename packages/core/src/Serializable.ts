@@ -1,6 +1,8 @@
 import { isArrayType, isLiteralType, LiteralType, SERIALIZE_KEY } from "./decorators";
 import { MetafileEscapes, RecordType } from "./enums";
 
+export const BYTE_PER_WORD = 2;
+
 export const literalByteLength: {
     [key in keyof typeof LiteralType]: number
 } = {
@@ -11,7 +13,27 @@ export const literalByteLength: {
     uint32: 4,
 }
 
-export const literalTransform: {
+export const literalToBuffer: {
+    [key in keyof typeof LiteralType]: (view: DataView, offset: number, value: number) => void
+} = {
+    int8: (view: DataView, offset: number, value: number) => {
+        return view.setInt8(offset, value);
+    },
+    uint8: (view: DataView, offset: number, value: number) => {
+        return view.setUint8(offset, value);
+    },
+    int16: (view: DataView, offset: number, value: number) => {
+        return view.setInt16(offset, value, true);
+    },
+    uint16: (view: DataView, offset: number, value: number) => {
+        return view.setUint16(offset, value,true);
+    },
+    uint32: (view: DataView, offset: number, value: number) => {
+        return view.setUint32(offset, value, true);
+    },
+}
+
+export const bufferToLiteral: {
     [key in keyof typeof LiteralType]: (view: DataView, offset: number) => any
 } = {
     int8: (view: DataView, offset: number) => {
@@ -44,7 +66,7 @@ export abstract class Serializable {
             const type = Reflect.getMetadata(SERIALIZE_KEY.type, this, key);
             let value: any;
             if (isLiteralType(type)) {
-                value = literalTransform[ LiteralType[type] ](view, offset);
+                value = bufferToLiteral[ LiteralType[type] ](view, offset);
                 offset += literalByteLength[ LiteralType[type] ];
                 _this[key] = value;
             } else if (isArrayType(type)) {
@@ -63,7 +85,40 @@ export abstract class Serializable {
         }
     }
 
-    public serialize(): void {
+    public serialize(): ArrayBuffer {
+        const _this = this as any;
+        const buffer = new Uint8Array(this.byteSize);
+        const view = new DataView(buffer.buffer);
+        const keys = Reflect.getMetadata(SERIALIZE_KEY.keys, this);
+        let offset = 0;
+        for (const key of keys) {
+            const type = Reflect.getMetadata(SERIALIZE_KEY.type, this, key);
+            if (isLiteralType(type)) {
+                literalToBuffer[LiteralType[type]](view, offset, _this[key]);
+                offset += literalByteLength[ LiteralType[type] ];
+            } else if (isArrayType(type)) {
+                for (const element of _this[key]) {
+                    const buf: ArrayBuffer = element.serialize();
+                    const uint8Buf = new Uint8Array(buf);
+                    buffer.set(uint8Buf, offset);
+                    offset += element.byteSize;
+                }
+            } else if (type === ArrayBuffer) {
+                const uint8Buf = new Uint8Array(_this[key]);
+                buffer.set(uint8Buf, offset);
+                offset += _this[key].byteLength;
+            } else {
+                const buf: ArrayBuffer = _this[key].serialize();
+                const uint8Buf = new Uint8Array(buf);
+                buffer.set(uint8Buf, offset);
+                offset += _this[key].byteSize;
+            }
+        }
+        if (_this.recordFunction === RecordType.META_ESCAPE && _this.escape) {
+            const escapeBuf = new Uint8Array(_this.escape.serialize());
+            buffer.set(escapeBuf, offset);
+        }
+        return buffer.buffer;
     }
 }
 
@@ -73,7 +128,7 @@ export abstract class SerializableRecord extends Serializable {
     public abstract recordSize: number;
 
     public get byteSize(): number {
-        return this.recordSize;
+        return this.recordSize * BYTE_PER_WORD;
     }
 }
 

@@ -1,13 +1,12 @@
 import { Serializable } from "../Serializable";
 import { MetafileType, MetafileVersion } from "../enums";
 export declare class META_HEADER extends Serializable {
-    byteSize: number;
+    get byteSize(): number;
     type: MetafileType;
-    headerSize: number;
+    readonly headerSize: number;
     version: MetafileVersion;
-    sizeLow: number;
-    sizeHigh: number;
+    size: number;
     numberOfObjects: number;
     maxRecord: number;
-    numberOfMembers: number;
+    readonly numberOfMembers: number;
 }

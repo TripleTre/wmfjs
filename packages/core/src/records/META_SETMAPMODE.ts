@@ -1,11 +1,14 @@
-import { SerializableRecord } from "../Serializable";
-import { LiteralType, serialize } from "../decorators";
+import { BYTE_PER_WORD, SerializableRecord } from "../Serializable";
+import { LiteralType, readonly, serialize } from "../decorators";
 import { MapMode, RecordType } from "../enums";
 
 export class META_SETMAPMODE extends SerializableRecord {
 
+    @readonly
     @serialize(LiteralType.uint32)
-    public readonly recordSize: number = 8;
+    public get recordSize(): number {
+        return 8 / BYTE_PER_WORD;
+    };
 
     @serialize(LiteralType.uint16)
     public readonly recordFunction: RecordType = RecordType.META_SETMAPMODE;

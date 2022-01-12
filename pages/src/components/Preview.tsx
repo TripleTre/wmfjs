@@ -1,5 +1,5 @@
 import { SvgPlayback } from "@wmfjs/svg-playback";
-import { parser } from "@wmfjs/core";
+import { WindowsMetaFile } from "@wmfjs/core";
 import { useEffect, useRef } from "react";
 import styled from "styled-components";
 
@@ -19,8 +19,15 @@ export function Preview(props: PreviewProps) {
 
     useEffect(() => {
         if (props.src.byteLength > 0) {
-            const wmf = parser(props.src);
+            const wmf = new WindowsMetaFile();
+            wmf.deserialize(props.src);
+            console.log("wmf1", wmf);
+            const resultBuffer = wmf.serialize();
+            const wmf2 = new WindowsMetaFile();
+            wmf2.deserialize(resultBuffer);
+            console.log("wmf2", wmf2);
             const svgPlayback = new SvgPlayback(wmf);
+            svgPlayback.display();
             if (svgAnchor.current) {
                 svgAnchor.current.appendChild(svgPlayback.svgElement);
             }

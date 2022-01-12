@@ -1,36 +1,39 @@
-import { META_CREATEBRUSHINDIRECT } from "./META_CREATEBRUSHINDIRECT";
-import { META_CREATEPENINDIRECT } from "./META_CREATEPENINDIRECT";
-import { META_DELETEOBJECT } from "./META_DELETEOBJECT";
-import { META_EOF } from "./META_EOF";
-import { META_ESCAPE } from "./META_ESCAPE";
-import { META_HEADER } from "./META_HEADER";
-import { META_PLACEABLE } from "./META_PLACEABLE";
-import { META_POLYGON } from "./META_POLYGON";
-import { META_SELECTOBJECT } from "./META_SELECTOBJECT";
-import { META_SETBKMODE } from "./META_SETBKMODE";
-import { META_SETMAPMODE } from "./META_SETMAPMODE";
-import { META_SETPOLYFILLMODE } from "./META_SETPOLYFILLMODE";
-import { META_SETROP2 } from "./META_SETROP2";
-import { META_SETTEXTALIGN } from "./META_SETTEXTALIGN";
-import { META_SETTEXTCOLOR } from "./META_SETTEXTCOLOR";
-import { META_SETWINDOWEXT } from "./META_SETWINDOWEXT";
-import { META_SETWINDOWORG } from "./META_SETWINDOWORG";
-export const RECORDS = {
-    META_CREATEBRUSHINDIRECT,
-    META_CREATEPENINDIRECT,
-    META_DELETEOBJECT,
-    META_EOF,
-    META_ESCAPE,
-    META_HEADER,
-    META_PLACEABLE,
-    META_POLYGON,
-    META_SELECTOBJECT,
-    META_SETBKMODE,
-    META_SETMAPMODE,
-    META_SETPOLYFILLMODE,
-    META_SETROP2,
-    META_SETTEXTALIGN,
-    META_SETTEXTCOLOR,
-    META_SETWINDOWEXT,
-    META_SETWINDOWORG,
-};
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.META_ARC = exports.META_SETWINDOWORG = exports.META_SETWINDOWEXT = exports.META_SETTEXTCOLOR = exports.META_SETTEXTALIGN = exports.META_SETROP2 = exports.META_SETPOLYFILLMODE = exports.META_SETMAPMODE = exports.META_SETBKMODE = exports.META_SELECTOBJECT = exports.META_POLYGON = exports.META_PLACEABLE = exports.META_HEADER = exports.META_ESCAPE = exports.META_EOF = exports.META_DELETEOBJECT = exports.META_CREATEPENINDIRECT = exports.META_CREATEBRUSHINDIRECT = void 0;
+var META_CREATEBRUSHINDIRECT_1 = require("./META_CREATEBRUSHINDIRECT");
+Object.defineProperty(exports, "META_CREATEBRUSHINDIRECT", { enumerable: true, get: function () { return META_CREATEBRUSHINDIRECT_1.META_CREATEBRUSHINDIRECT; } });
+var META_CREATEPENINDIRECT_1 = require("./META_CREATEPENINDIRECT");
+Object.defineProperty(exports, "META_CREATEPENINDIRECT", { enumerable: true, get: function () { return META_CREATEPENINDIRECT_1.META_CREATEPENINDIRECT; } });
+var META_DELETEOBJECT_1 = require("./META_DELETEOBJECT");
+Object.defineProperty(exports, "META_DELETEOBJECT", { enumerable: true, get: function () { return META_DELETEOBJECT_1.META_DELETEOBJECT; } });
+var META_EOF_1 = require("./META_EOF");
+Object.defineProperty(exports, "META_EOF", { enumerable: true, get: function () { return META_EOF_1.META_EOF; } });
+var META_ESCAPE_1 = require("./META_ESCAPE");
+Object.defineProperty(exports, "META_ESCAPE", { enumerable: true, get: function () { return META_ESCAPE_1.META_ESCAPE; } });
+var META_HEADER_1 = require("./META_HEADER");
+Object.defineProperty(exports, "META_HEADER", { enumerable: true, get: function () { return META_HEADER_1.META_HEADER; } });
+var META_PLACEABLE_1 = require("./META_PLACEABLE");
+Object.defineProperty(exports, "META_PLACEABLE", { enumerable: true, get: function () { return META_PLACEABLE_1.META_PLACEABLE; } });
+var META_POLYGON_1 = require("./META_POLYGON");
+Object.defineProperty(exports, "META_POLYGON", { enumerable: true, get: function () { return META_POLYGON_1.META_POLYGON; } });
+var META_SELECTOBJECT_1 = require("./META_SELECTOBJECT");
+Object.defineProperty(exports, "META_SELECTOBJECT", { enumerable: true, get: function () { return META_SELECTOBJECT_1.META_SELECTOBJECT; } });
+var META_SETBKMODE_1 = require("./META_SETBKMODE");
+Object.defineProperty(exports, "META_SETBKMODE", { enumerable: true, get: function () { return META_SETBKMODE_1.META_SETBKMODE; } });
+var META_SETMAPMODE_1 = require("./META_SETMAPMODE");
+Object.defineProperty(exports, "META_SETMAPMODE", { enumerable: true, get: function () { return META_SETMAPMODE_1.META_SETMAPMODE; } });
+var META_SETPOLYFILLMODE_1 = require("./META_SETPOLYFILLMODE");
+Object.defineProperty(exports, "META_SETPOLYFILLMODE", { enumerable: true, get: function () { return META_SETPOLYFILLMODE_1.META_SETPOLYFILLMODE; } });
+var META_SETROP2_1 = require("./META_SETROP2");
+Object.defineProperty(exports, "META_SETROP2", { enumerable: true, get: function () { return META_SETROP2_1.META_SETROP2; } });
+var META_SETTEXTALIGN_1 = require("./META_SETTEXTALIGN");
+Object.defineProperty(exports, "META_SETTEXTALIGN", { enumerable: true, get: function () { return META_SETTEXTALIGN_1.META_SETTEXTALIGN; } });
+var META_SETTEXTCOLOR_1 = require("./META_SETTEXTCOLOR");
+Object.defineProperty(exports, "META_SETTEXTCOLOR", { enumerable: true, get: function () { return META_SETTEXTCOLOR_1.META_SETTEXTCOLOR; } });
+var META_SETWINDOWEXT_1 = require("./META_SETWINDOWEXT");
+Object.defineProperty(exports, "META_SETWINDOWEXT", { enumerable: true, get: function () { return META_SETWINDOWEXT_1.META_SETWINDOWEXT; } });
+var META_SETWINDOWORG_1 = require("./META_SETWINDOWORG");
+Object.defineProperty(exports, "META_SETWINDOWORG", { enumerable: true, get: function () { return META_SETWINDOWORG_1.META_SETWINDOWORG; } });
+var META_ARC_1 = require("./META_ARC");
+Object.defineProperty(exports, "META_ARC", { enumerable: true, get: function () { return META_ARC_1.META_ARC; } });

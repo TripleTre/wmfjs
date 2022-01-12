@@ -1,5 +1,5 @@
 import { SerializableEscape } from "../Serializable";
-import { LiteralType, serialize } from "../decorators";
+import { LiteralType, readonly, serialize } from "../decorators";
 import { MetafileEscapes } from "../enums";
 
 export class SETMITERLIMIT extends SerializableEscape {
@@ -7,26 +7,24 @@ export class SETMITERLIMIT extends SerializableEscape {
     @serialize(LiteralType.uint16)
     public escapeFunction: MetafileEscapes = MetafileEscapes.SETMITERLIMIT;
 
+    @readonly
     @serialize(LiteralType.uint16)
     public get byteCount(): number {
         return this.escapeData.byteLength;
     }
-    public set byteCount(v: number) {}
 
     @serialize()
     public get escapeData(): ArrayBuffer {
-        const buf = new Int32Array(1);
-        buf[0] = this.miterLimit;
-        return buf.buffer;
+        const buf = new ArrayBuffer(4);
+        const view = new DataView(buf);
+        view.setInt32(0, this.miterLimit, true);
+        return buf;
     };
     public set escapeData(buf: ArrayBuffer) {
         const view = new DataView(buf);
         this.miterLimit = view.getUint32(0, true);
     }
 
-    public miterLimit: number = 5;
+    public miterLimit: number = 4;
 
-    public get byteSize(): number {
-        return 2 + 2 + this.escapeData.byteLength;
-    }
 }

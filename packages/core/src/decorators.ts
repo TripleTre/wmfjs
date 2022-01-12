@@ -46,3 +46,7 @@ export function serialize(type?: LiteralType | CollectionType): PropertyDecorato
         // console.log(propertyKey, _type, _order);
     }
 }
+
+export function readonly(target: Object, propertyKey: string | symbol, descriptor: any) {
+    descriptor.set = () => {};
+}

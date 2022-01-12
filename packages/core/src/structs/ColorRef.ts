@@ -1,9 +1,12 @@
 import { Serializable } from "../Serializable";
-import { LiteralType, serialize } from "../decorators";
+import { LiteralType, readonly, serialize } from "../decorators";
 
 export class ColorRef extends Serializable {
 
-    public readonly byteSize: number = 4;
+    @readonly
+    public get byteSize(): number {
+        return 4;
+    };
 
     @serialize(LiteralType.uint8)
     public r: number = 0;

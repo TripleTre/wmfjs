@@ -1,3 +1,4 @@
+"use strict";
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
@@ -7,27 +8,35 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
-import { SerializableRecord } from "../Serializable";
-import { LiteralType, serialize } from "../decorators";
-import { RecordType } from "../enums";
-import { Pen } from "../structs/Pen";
-export class META_CREATEPENINDIRECT extends SerializableRecord {
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.META_CREATEPENINDIRECT = void 0;
+const Serializable_1 = require("../Serializable");
+const decorators_1 = require("../decorators");
+const enums_1 = require("../enums");
+const Pen_1 = require("../structs/Pen");
+class META_CREATEPENINDIRECT extends Serializable_1.SerializableRecord {
     constructor() {
         super(...arguments);
-        this.recordSize = 16;
-        this.recordFunction = RecordType.META_CREATEPENINDIRECT;
-        this.pen = new Pen();
+        this.recordFunction = enums_1.RecordType.META_CREATEPENINDIRECT;
+        this.pen = new Pen_1.Pen();
     }
+    get recordSize() {
+        return 16 / Serializable_1.BYTE_PER_WORD;
+    }
+    ;
 }
 __decorate([
-    serialize(LiteralType.uint32),
-    __metadata("design:type", Number)
-], META_CREATEPENINDIRECT.prototype, "recordSize", void 0);
+    decorators_1.readonly,
+    (0, decorators_1.serialize)(decorators_1.LiteralType.uint32),
+    __metadata("design:type", Number),
+    __metadata("design:paramtypes", [])
+], META_CREATEPENINDIRECT.prototype, "recordSize", null);
 __decorate([
-    serialize(LiteralType.uint16),
+    (0, decorators_1.serialize)(decorators_1.LiteralType.uint16),
     __metadata("design:type", Number)
 ], META_CREATEPENINDIRECT.prototype, "recordFunction", void 0);
 __decorate([
-    serialize(),
-    __metadata("design:type", Pen)
+    (0, decorators_1.serialize)(),
+    __metadata("design:type", Pen_1.Pen)
 ], META_CREATEPENINDIRECT.prototype, "pen", void 0);
+exports.META_CREATEPENINDIRECT = META_CREATEPENINDIRECT;

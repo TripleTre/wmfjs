@@ -18,3 +18,4 @@ export interface CollectionType {
 export declare function isLiteralType(t: any): t is keyof typeof LiteralType;
 export declare function isArrayType(t: any): t is CollectionType;
 export declare function serialize(type?: LiteralType | CollectionType): PropertyDecorator;
+export declare function readonly(target: Object, propertyKey: string | symbol, descriptor: any): void;

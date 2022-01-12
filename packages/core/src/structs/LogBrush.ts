@@ -1,11 +1,14 @@
 import { Serializable } from "../Serializable";
 import { BrushStyle, HatchStyle } from "../enums";
-import { LiteralType, serialize } from "../decorators";
+import { LiteralType, readonly, serialize } from "../decorators";
 import { ColorRef } from "./ColorRef";
 
 export class LogBrush extends Serializable {
 
-    public readonly byteSize: number = 8;
+    @readonly
+    public get byteSize(): number {
+        return 8;
+    };
 
     @serialize(LiteralType.uint16)
     public brushStyle: BrushStyle = BrushStyle.BS_NULL;

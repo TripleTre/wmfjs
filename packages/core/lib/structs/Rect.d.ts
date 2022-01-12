@@ -1,6 +1,6 @@
 import { Serializable } from "../Serializable";
 export declare class Rect extends Serializable {
-    readonly byteSize: number;
+    get byteSize(): number;
     left: number;
     top: number;
     right: number;

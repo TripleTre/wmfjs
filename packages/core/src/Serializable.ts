@@ -63,6 +63,9 @@ export abstract class Serializable {
         const keys = Reflect.getMetadata(SERIALIZE_KEY.keys, this);
         let offset = 0;
         for (const key of keys) {
+            if (key === "reserved") {
+                continue;
+            }
             const type = Reflect.getMetadata(SERIALIZE_KEY.type, this, key);
             let value: any;
             if (isLiteralType(type)) {

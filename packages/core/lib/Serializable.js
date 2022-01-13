@@ -52,6 +52,9 @@ class Serializable {
         const keys = Reflect.getMetadata(decorators_1.SERIALIZE_KEY.keys, this);
         let offset = 0;
         for (const key of keys) {
+            if (key === "reserved") {
+                continue;
+            }
             const type = Reflect.getMetadata(decorators_1.SERIALIZE_KEY.type, this, key);
             let value;
             if ((0, decorators_1.isLiteralType)(type)) {

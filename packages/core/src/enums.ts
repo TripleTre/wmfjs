@@ -236,3 +236,8 @@ export enum TextAlign {
     TA_BASELINE = 0x0018,
     TA_RTLREADING = 0x0100,
 };
+
+export enum FloodFill {
+    FLOODFILLBORDER = 0x0000,
+    FLOODFILLSURFACE = 0x0001
+}

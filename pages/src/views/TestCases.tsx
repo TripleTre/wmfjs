@@ -5,6 +5,7 @@ import { TestCaseItem } from "../components/TestCaseItem";
 const Layout = styled.div`
   height: 100vh;
   background: rgb(43, 43, 43);
+  overflow: scroll;
 `;
 
 const Group = styled.div`
@@ -19,7 +20,7 @@ const GroupContent = styled.div`
 `;
 
 const ASSETS: any = {
-    drawing: ["polygon", "arc"],
+    drawing: ["polygon", "arc", "chord", "ellipse"],
 }
 
 export function TestCases() {

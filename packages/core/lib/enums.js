@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.TextAlign = exports.HatchStyle = exports.BrushStyle = exports.PenStyle = exports.MetafileEscapes = exports.BinaryRasterOperation = exports.PolyFillMode = exports.MixMode = exports.MapMode = exports.RecordType = exports.MetafileVersion = exports.MetafileType = void 0;
+exports.FloodFill = exports.TextAlign = exports.HatchStyle = exports.BrushStyle = exports.PenStyle = exports.MetafileEscapes = exports.BinaryRasterOperation = exports.PolyFillMode = exports.MixMode = exports.MapMode = exports.RecordType = exports.MetafileVersion = exports.MetafileType = void 0;
 var MetafileType;
 (function (MetafileType) {
     MetafileType[MetafileType["MEMORYMETAFILE"] = 1] = "MEMORYMETAFILE";
@@ -252,3 +252,8 @@ var TextAlign;
     TextAlign[TextAlign["TA_RTLREADING"] = 256] = "TA_RTLREADING";
 })(TextAlign = exports.TextAlign || (exports.TextAlign = {}));
 ;
+var FloodFill;
+(function (FloodFill) {
+    FloodFill[FloodFill["FLOODFILLBORDER"] = 0] = "FLOODFILLBORDER";
+    FloodFill[FloodFill["FLOODFILLSURFACE"] = 1] = "FLOODFILLSURFACE";
+})(FloodFill = exports.FloodFill || (exports.FloodFill = {}));

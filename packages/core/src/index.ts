@@ -6,7 +6,5 @@ export * from "./enums";
 export * from "./types";
 export * from "./WindowsMetaFile";
 export * from "./structs";
-export * from "./Serializable";
-export * from "./decorators";
 export * from "./records";
 

@@ -1,31 +1,43 @@
 import { IPlaybackCtx } from "./IPlayback";
-import { BinaryRasterOperation, MapMode, MetafileEscapes, MixMode, PolyFillMode, RecordType } from "./enums";
+import {
+    BinaryRasterOperation,
+    BrushStyle,
+    MapMode,
+    MetafileEscapes,
+    MixMode,
+    PolyFillMode,
+    RecordType
+} from "./enums";
 import { WindowsMetaFile } from "./WindowsMetaFile";
 import { SerializableRecord } from "./Serializable";
 import {
-    META_ESCAPE, META_SETWINDOWEXT, META_SETWINDOWORG, META_SETTEXTALIGN,
-    META_SETTEXTCOLOR, META_CREATEPENINDIRECT, META_SETPOLYFILLMODE,
-    META_SETMAPMODE, META_SETBKMODE, META_SETROP2, META_SELECTOBJECT,
-    META_CREATEBRUSHINDIRECT, META_DELETEOBJECT, META_POLYGON, META_ARC,
+    META_ARC,
+    META_CREATEBRUSHINDIRECT,
+    META_CREATEPENINDIRECT,
+    META_DELETEOBJECT, META_ELLIPSE,
+    META_ESCAPE,
+    META_POLYGON,
+    META_SELECTOBJECT,
+    META_SETBKMODE,
+    META_SETMAPMODE,
+    META_SETPOLYFILLMODE,
+    META_SETROP2,
+    META_SETTEXTALIGN,
+    META_SETTEXTCOLOR,
+    META_SETWINDOWEXT,
+    META_SETWINDOWORG,
 } from "./records";
-import { Pen, LogBrush, PointS } from "./structs";
+import { LogBrush, Pen, PointS } from "./structs";
 import { SETMITERLIMIT } from "./escapes";
-import { centerAngle } from "./utils";
+import { toCenteredArc } from "./utils";
+import { META_CHORD } from "./records/META_CHORD";
+import { CenteredArc } from "./types";
 
 export function isEscape(record: SerializableRecord): record is META_ESCAPE {
     return record.recordFunction === RecordType.META_ESCAPE;
 }
 
 export type WMFObject = Pen | LogBrush;
-
-export type CenteredArc = {
-    cx: number;
-    cy: number;
-    rx: number;
-    ry: number;
-    stAngle: number;
-    swAngle: number;
-}
 
 export abstract class BasicPlayback {
 
@@ -38,7 +50,8 @@ export abstract class BasicPlayback {
 
     protected abstract updateViewBox(ext: PointS, origin: PointS): void;
     protected abstract drawPolygon(points: PointS[]): void;
-    protected abstract drawArc(arc: CenteredArc): void;
+    protected abstract drawArc(arc: CenteredArc, close: boolean): void;
+    protected abstract drawEllipse(cx: number, cy: number, rx: number, ry: number): void;
 
     public constructor(wmfObject: WindowsMetaFile) {
         this.wmf = wmfObject;
@@ -152,30 +165,25 @@ export abstract class BasicPlayback {
 
     META_ARC(record: META_ARC): void {
         const { leftRect, rightRect, topRect, bottomRect, xStartArc, yStartArc, xEndArc, yEndArc } = record;
+        const arc = toCenteredArc(yEndArc, xEndArc, yStartArc, xStartArc, leftRect, rightRect, topRect, bottomRect);
+        const brushStyle = this.ctx.brush.brushStyle;
+        this.ctx.brush.brushStyle = BrushStyle.BS_NULL;
+        this.drawArc(arc, false);
+        this.ctx.brush.brushStyle = brushStyle;
+    }
+
+    META_CHORD(record: META_CHORD): void {
+        const { leftRect, rightRect, topRect, bottomRect, xRadial1, yRadial1, xRadial2, yRadial2 } = record;
+        const arc = toCenteredArc(yRadial2, xRadial2, yRadial1, xRadial1, leftRect, rightRect, topRect, bottomRect);
+        this.drawArc(arc, true);
+    }
+
+    META_ELLIPSE(record: META_ELLIPSE): void {
+        const { leftRect, rightRect, topRect, bottomRect } = record;
         const cx = (leftRect + rightRect) / 2;
         const cy = (topRect + bottomRect) / 2;
         const rx = (rightRect - leftRect) / 2;
         const ry = (bottomRect - topRect) / 2;
-
-        const sx = xStartArc - cx;
-        const sy = cy - yStartArc;
-        const stAngle = centerAngle(sx, sy);
-
-        const ex = xEndArc - cx;
-        const ey = cy - yEndArc;
-        const enAngle = centerAngle(ex, ey);
-
-        let swAngle = enAngle - stAngle;
-        while (swAngle < 0) {
-            swAngle += Math.PI * 2;
-        }
-        console.log(stAngle / Math.PI * 180);
-        console.log(enAngle / Math.PI * 180);
-
-        this.drawArc({
-            cx, cy, rx, ry,
-            stAngle: stAngle,
-            swAngle,
-        });
+        this.drawEllipse(cx, cy, rx, ry);
     }
 }

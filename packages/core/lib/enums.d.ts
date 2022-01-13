@@ -225,3 +225,7 @@ export declare enum TextAlign {
     TA_BASELINE = 24,
     TA_RTLREADING = 256
 }
+export declare enum FloodFill {
+    FLOODFILLBORDER = 0,
+    FLOODFILLSURFACE = 1
+}

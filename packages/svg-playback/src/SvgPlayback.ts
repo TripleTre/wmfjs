@@ -44,7 +44,7 @@ export class SvgPlayback extends BasicPlayback {
         }
     }
 
-    private postPathProcessor(element: SVGPathElement): void {
+    private postDisplayElementProcessor(element: SVGElement): void {
         const { polyFillRule } = this.ctx;
         element.setAttribute("fill-rule", polyFillRule);
         this.applyPenStyle(element);
@@ -61,13 +61,14 @@ export class SvgPlayback extends BasicPlayback {
             result += `L ${next.x} ${next.y} `;
             return result;
         }, "");
+        d += " Z";
         const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
         path.setAttribute("d", d);
-        this.postPathProcessor(path);
+        this.postDisplayElementProcessor(path);
         this.svgElement.appendChild(path);
     }
 
-    protected drawArc(arc: CenteredArc): void {
+    protected drawArc(arc: CenteredArc, close: boolean): void {
         const x0 = arc.cx + arc.rx * Math.cos(arc.stAngle);
         const y0 = arc.cy + arc.ry * Math.sin(arc.stAngle);
         const x1 = arc.cx + arc.rx * Math.cos(arc.stAngle + arc.swAngle);
@@ -75,9 +76,22 @@ export class SvgPlayback extends BasicPlayback {
         const largeArc = arc.swAngle > Math.PI ? 0 : 1;
         const sweep = arc.swAngle > 0 ? 0 : 1;
         const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
-        path.setAttribute("d", `M ${x0} ${y0} A ${arc.rx} ${arc.ry} 0 ${largeArc} ${sweep} ${x1} ${y1}`);
-        this.postPathProcessor(path);
-        path.setAttribute("fill", "none");
+        let d = `M ${x0} ${y0} A ${arc.rx} ${arc.ry} 0 ${largeArc} ${sweep} ${x1} ${y1}`;
+        if (close) {
+            d += " Z";
+        }
+        path.setAttribute("d", d);
+        this.postDisplayElementProcessor(path);
         this.svgElement.appendChild(path);
+    }
+
+    protected drawEllipse(cx: number, cy: number, rx: number, ry: number): void {
+        const ellipse = document.createElementNS("http://www.w3.org/2000/svg", "ellipse");
+        ellipse.setAttribute("cx", cx.toString());
+        ellipse.setAttribute("cy", cy.toString());
+        ellipse.setAttribute("rx", rx.toString());
+        ellipse.setAttribute("ry", ry.toString());
+        this.postDisplayElementProcessor(ellipse);
+        this.svgElement.appendChild(ellipse);
     }
 }

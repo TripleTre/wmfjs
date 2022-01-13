@@ -28,6 +28,7 @@ const Lable = styled.div`
   margin: 4px;
   width: 80px;
   text-align: center;
+  flex: 0 0 auto;
 `;
 
 const Format = styled.div`

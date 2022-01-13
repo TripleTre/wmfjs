@@ -111,27 +111,24 @@ class BasicPlayback {
     }
     META_ARC(record) {
         const { leftRect, rightRect, topRect, bottomRect, xStartArc, yStartArc, xEndArc, yEndArc } = record;
+        const arc = (0, utils_1.toCenteredArc)(yEndArc, xEndArc, yStartArc, xStartArc, leftRect, rightRect, topRect, bottomRect);
+        const brushStyle = this.ctx.brush.brushStyle;
+        this.ctx.brush.brushStyle = enums_1.BrushStyle.BS_NULL;
+        this.drawArc(arc, false);
+        this.ctx.brush.brushStyle = brushStyle;
+    }
+    META_CHORD(record) {
+        const { leftRect, rightRect, topRect, bottomRect, xRadial1, yRadial1, xRadial2, yRadial2 } = record;
+        const arc = (0, utils_1.toCenteredArc)(yRadial2, xRadial2, yRadial1, xRadial1, leftRect, rightRect, topRect, bottomRect);
+        this.drawArc(arc, true);
+    }
+    META_ELLIPSE(record) {
+        const { leftRect, rightRect, topRect, bottomRect } = record;
         const cx = (leftRect + rightRect) / 2;
         const cy = (topRect + bottomRect) / 2;
         const rx = (rightRect - leftRect) / 2;
         const ry = (bottomRect - topRect) / 2;
-        const sx = xStartArc - cx;
-        const sy = cy - yStartArc;
-        const stAngle = (0, utils_1.centerAngle)(sx, sy);
-        const ex = xEndArc - cx;
-        const ey = cy - yEndArc;
-        const enAngle = (0, utils_1.centerAngle)(ex, ey);
-        let swAngle = enAngle - stAngle;
-        while (swAngle < 0) {
-            swAngle += Math.PI * 2;
-        }
-        console.log(stAngle / Math.PI * 180);
-        console.log(enAngle / Math.PI * 180);
-        this.drawArc({
-            cx, cy, rx, ry,
-            stAngle: stAngle,
-            swAngle,
-        });
+        this.drawEllipse(cx, cy, rx, ry);
     }
 }
 exports.BasicPlayback = BasicPlayback;

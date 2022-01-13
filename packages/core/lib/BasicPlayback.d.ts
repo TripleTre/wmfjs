@@ -1,19 +1,13 @@
 import { IPlaybackCtx } from "./IPlayback";
 import { WindowsMetaFile } from "./WindowsMetaFile";
 import { SerializableRecord } from "./Serializable";
-import { META_ESCAPE, META_SETWINDOWEXT, META_SETWINDOWORG, META_SETTEXTALIGN, META_SETTEXTCOLOR, META_CREATEPENINDIRECT, META_SETPOLYFILLMODE, META_SETMAPMODE, META_SETBKMODE, META_SETROP2, META_SELECTOBJECT, META_CREATEBRUSHINDIRECT, META_DELETEOBJECT, META_POLYGON, META_ARC } from "./records";
-import { Pen, LogBrush, PointS } from "./structs";
+import { META_ARC, META_CREATEBRUSHINDIRECT, META_CREATEPENINDIRECT, META_DELETEOBJECT, META_ELLIPSE, META_ESCAPE, META_POLYGON, META_SELECTOBJECT, META_SETBKMODE, META_SETMAPMODE, META_SETPOLYFILLMODE, META_SETROP2, META_SETTEXTALIGN, META_SETTEXTCOLOR, META_SETWINDOWEXT, META_SETWINDOWORG } from "./records";
+import { LogBrush, Pen, PointS } from "./structs";
 import { SETMITERLIMIT } from "./escapes";
+import { META_CHORD } from "./records/META_CHORD";
+import { CenteredArc } from "./types";
 export declare function isEscape(record: SerializableRecord): record is META_ESCAPE;
 export declare type WMFObject = Pen | LogBrush;
-export declare type CenteredArc = {
-    cx: number;
-    cy: number;
-    rx: number;
-    ry: number;
-    stAngle: number;
-    swAngle: number;
-};
 export declare abstract class BasicPlayback {
     protected wmf: WindowsMetaFile;
     protected ctx: IPlaybackCtx;
@@ -22,7 +16,8 @@ export declare abstract class BasicPlayback {
     private viewOrigin;
     protected abstract updateViewBox(ext: PointS, origin: PointS): void;
     protected abstract drawPolygon(points: PointS[]): void;
-    protected abstract drawArc(arc: CenteredArc): void;
+    protected abstract drawArc(arc: CenteredArc, close: boolean): void;
+    protected abstract drawEllipse(cx: number, cy: number, rx: number, ry: number): void;
     constructor(wmfObject: WindowsMetaFile);
     display(): void;
     protected getObject(index: number): WMFObject | null;
@@ -43,4 +38,6 @@ export declare abstract class BasicPlayback {
     META_POLYGON(record: META_POLYGON): void;
     ESCAPE_SETMITERLIMIT(escape: SETMITERLIMIT): void;
     META_ARC(record: META_ARC): void;
+    META_CHORD(record: META_CHORD): void;
+    META_ELLIPSE(record: META_ELLIPSE): void;
 }

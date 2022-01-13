@@ -16,6 +16,4 @@ __exportStar(require("./enums"), exports);
 __exportStar(require("./types"), exports);
 __exportStar(require("./WindowsMetaFile"), exports);
 __exportStar(require("./structs"), exports);
-__exportStar(require("./Serializable"), exports);
-__exportStar(require("./decorators"), exports);
 __exportStar(require("./records"), exports);

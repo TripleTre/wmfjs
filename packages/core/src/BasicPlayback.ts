@@ -15,7 +15,7 @@ import {
     META_CREATEBRUSHINDIRECT,
     META_CREATEPENINDIRECT,
     META_DELETEOBJECT, META_ELLIPSE,
-    META_ESCAPE,
+    META_ESCAPE, META_LINETO,
     META_POLYGON,
     META_SELECTOBJECT,
     META_SETBKMODE,
@@ -27,11 +27,12 @@ import {
     META_SETWINDOWEXT,
     META_SETWINDOWORG,
 } from "./records";
-import { LogBrush, Pen, PointS } from "./structs";
+import { ColorRef, LogBrush, Pen, PointS } from "./structs";
 import { SETMITERLIMIT } from "./escapes";
 import { toCenteredArc } from "./utils";
 import { META_CHORD } from "./records/META_CHORD";
 import { CenteredArc } from "./types";
+import { META_MOVETO } from "./records/META_MOVETO";
 
 export function isEscape(record: SerializableRecord): record is META_ESCAPE {
     return record.recordFunction === RecordType.META_ESCAPE;
@@ -51,11 +52,18 @@ export abstract class BasicPlayback {
     protected abstract updateViewBox(ext: PointS, origin: PointS): void;
     protected abstract drawPolygon(points: PointS[]): void;
     protected abstract drawArc(arc: CenteredArc, close: boolean): void;
-    protected abstract drawEllipse(cx: number, cy: number, rx: number, ry: number): void;
+    protected abstract drawLine(point: PointS): void;
+    protected abstract playEnd(): void;
 
     public constructor(wmfObject: WindowsMetaFile) {
         this.wmf = wmfObject;
         this.objectTable = new Array(wmfObject.header.numberOfObjects);
+        this.ctx.brush = new LogBrush();
+        this.ctx.brush.colorRef = new ColorRef();
+        this.ctx.brush.colorRef.r = 255;
+        this.ctx.brush.colorRef.g = 255;
+        this.ctx.brush.colorRef.b = 255;
+        this.ctx.currentPosition = new PointS();
     }
 
     public display(): void {
@@ -152,7 +160,7 @@ export abstract class BasicPlayback {
     }
 
     META_EOF(): void {
-        console.log("end");
+        this.playEnd();
     }
 
     META_POLYGON(record: META_POLYGON): void {
@@ -184,6 +192,32 @@ export abstract class BasicPlayback {
         const cy = (topRect + bottomRect) / 2;
         const rx = (rightRect - leftRect) / 2;
         const ry = (bottomRect - topRect) / 2;
-        this.drawEllipse(cx, cy, rx, ry);
+        this.drawArc({
+            cx, cy, rx, ry,
+            stAngle: 0,
+            swAngle: Math.PI,
+        }, false);
+        this.drawArc({
+            cx, cy, rx, ry,
+            stAngle: Math.PI,
+            swAngle: Math.PI,
+        }, false);
+    }
+
+    META_MOVETO(record: META_MOVETO): void {
+        this.ctx.currentPosition.x = record.x;
+        this.ctx.currentPosition.y = record.y;
+    }
+
+    META_LINETO(record: META_LINETO): void {
+        const brushStyle = this.ctx.brush.brushStyle;
+        this.ctx.brush.brushStyle = BrushStyle.BS_NULL;
+        const p = new PointS();
+        p.x = record.x;
+        p.y = record.y;
+        this.drawLine(p)
+        this.ctx.currentPosition.x = record.x;
+        this.ctx.currentPosition.y = record.y;
+        this.ctx.brush.brushStyle = brushStyle;
     }
 }

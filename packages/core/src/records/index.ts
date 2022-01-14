@@ -18,6 +18,10 @@ export { META_SETWINDOWORG } from "./META_SETWINDOWORG";
 export { META_ARC } from "./META_ARC";
 export { META_CHORD } from "./META_CHORD";
 export { META_ELLIPSE } from "./META_ELLIPSE";
-export { META_EXTFLOODFILL } from "./META_EXTFLOODFILL";
-export { META_FLOODFILL } from "./META_FLOODFILL";
-export { META_SELECTCLIPREGION } from "./META_SELECTCLIPREGION";
+export { META_LINETO } from "./META_LINETO";
+export { META_MOVETO } from "./META_MOVETO";
+
+// building
+// export { META_EXTFLOODFILL } from "./META_EXTFLOODFILL";
+// export { META_FLOODFILL } from "./META_FLOODFILL";
+// export { META_SELECTCLIPREGION } from "./META_SELECTCLIPREGION";

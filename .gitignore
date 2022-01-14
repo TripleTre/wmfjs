@@ -3,3 +3,7 @@
 node_modules
 coverage
 /test/output/
+/files/
+/packages/core/wmfs/
+/packages/core/lib/
+/packages/svg-playback/lib/

@@ -19,4 +19,20 @@ export class Pen extends Serializable {
 
     @serialize()
     public colorRef: ColorRef = new ColorRef();
+
+    public clone(from: Pen): void {
+        this.penStyle = from.penStyle;
+        this.width.x = from.width.x;
+        this.colorRef.r = from.colorRef.r;
+        this.colorRef.g = from.colorRef.g;
+        this.colorRef.b = from.colorRef.b;
+    }
+
+    public equals(other: Pen): boolean {
+        return (
+            this.penStyle === other.penStyle &&
+            this.width.x === other.width.x &&
+            this.colorRef.equals(other.colorRef)
+        );
+    }
 }

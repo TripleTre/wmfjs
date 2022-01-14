@@ -41,7 +41,7 @@ export class WindowsMetaFile {
             const fn = buf.getUint16(offset + 4, true);
             const recordType = RecordType[ fn ];
             if (!(RECORDS as any)[ recordType ]) {
-                console.warn("unsupported record payload", RecordType[ fn ]);
+                // console.warn("unsupported record payload", RecordType[ fn ]);
                 offset += size;
                 continue;
             }
@@ -56,7 +56,7 @@ export class WindowsMetaFile {
                     escape.deserialize(input.slice(offset + 6, offset + 10 + byteCount));
                     record.escape = escape;
                 } else {
-                    console.warn("unsupported escape ", MetafileEscapes[escapeFunction]);
+                    // console.warn("unsupported escape ", MetafileEscapes[escapeFunction]);
                 }
             }
             offset += size;

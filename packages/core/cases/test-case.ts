@@ -7,7 +7,7 @@ import {
     META_CREATEBRUSHINDIRECT,
     META_CREATEPENINDIRECT,
     META_EOF,
-    META_ESCAPE, META_FLOODFILL,
+    META_ESCAPE, META_LINETO,
     META_PLACEABLE, META_POLYGON,
     META_SETBKMODE,
     META_SETMAPMODE,
@@ -25,6 +25,7 @@ import { deleteObject, fillColor, mainColor, selectObject, strokeColor } from ".
 import * as path from "path";
 import { SETMITERLIMIT } from "../src/escapes";
 import { META_EXTFLOODFILL } from "../src/records/META_EXTFLOODFILL";
+import { META_MOVETO } from "../src/records/META_MOVETO";
 
 
 const wmf = new WindowsMetaFile();
@@ -101,24 +102,21 @@ wmf.records.push(brush);
 wmf.records.push(selectObject(1));
 
 (function draw() {
-    const polygon = new META_POLYGON();
-    polygon.aPoints = ([
-        [20, 20], [420, 20], [420, 420], [20, 420]
-    ]).map(([x, y]) => {
-        const point = new PointS();
-        point.x = x;
-        point.y = y;
-        return point;
-    });
-    wmf.records.push(polygon);
+    const mt = new META_MOVETO();
+    mt.x = 400;
+    mt.y = 400;
+    wmf.records.push(mt);
 
-    const fill = new META_FLOODFILL();
-    fill.colorRef = strokeColor;
-    // fill.mode = FloodFill.FLOODFILLBORDER;
-    fill.x = 200;
-    fill.y = 200;
-    console.log(fill.serialize());
-    wmf.records.push(fill);
+    const lt = new META_LINETO();
+    lt.x = 1000;
+    lt.y = 1000;
+    wmf.records.push(lt);
+})();
+(function draw() {
+    const lt = new META_LINETO();
+    lt.x = 300;
+    lt.y = 1000;
+    wmf.records.push(lt);
 })();
 
 // wmf.records.push(deleteObject(2));

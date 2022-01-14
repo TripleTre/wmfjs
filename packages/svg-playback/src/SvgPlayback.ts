@@ -1,19 +1,34 @@
-import { PointS, BasicPlayback, BrushStyle, PenStyle, WindowsMetaFile, CenteredArc } from "@wmfjs/core";
+import { PointS, BasicPlayback, BrushStyle, PenStyle, WindowsMetaFile, CenteredArc, Pen, LogBrush } from "@wmfjs/core";
 import { decimalToCssString } from "./color";
+
+export interface DrawingContext {
+    pen: Pen;
+    brush: LogBrush;
+    endPoint: PointS;
+    currentPathData: string | null;
+}
 
 export class SvgPlayback extends BasicPlayback {
 
     public svgElement: SVGElement;
+
+    private drawingCtx: DrawingContext;
 
     public constructor(wmf: WindowsMetaFile) {
         super(wmf);
         this.svgElement = document.createElementNS("http://www.w3.org/2000/svg", "svg");
         this.svgElement.setAttribute("xmlns", "http://www.w3.org/2000/svg");
         this.svgElement.setAttribute("version", "1.1");
+        this.drawingCtx = {
+            pen: new Pen(),
+            brush: new LogBrush(),
+            currentPathData: null,
+            endPoint: new PointS(),
+        };
     }
 
     private applyPenStyle(element: SVGElement): void {
-        const { pen } = this.ctx;
+        const { pen } = this.drawingCtx;
         const flags = Object.keys(PenStyle).filter(v => /^PS_/.test(v)) as Array<keyof typeof PenStyle>;
         flags.forEach(f => {
             if (PenStyle[f] & pen.penStyle) {
@@ -34,7 +49,7 @@ export class SvgPlayback extends BasicPlayback {
     }
 
     private applyBrushStyle(element: SVGElement): void {
-        const { brush } = this.ctx;
+        const { brush } = this.drawingCtx;
         if (brush.brushStyle === BrushStyle.BS_NULL) {
             element.setAttribute("fill", "none");
         } else if (brush.brushStyle === BrushStyle.BS_SOLID) {
@@ -51,47 +66,77 @@ export class SvgPlayback extends BasicPlayback {
         this.applyBrushStyle(element);
     }
 
+    private needCreatePath(): boolean {
+        return !this.drawingCtx.pen.equals(this.ctx.pen) ||
+            !this.drawingCtx.brush.equals(this.ctx.brush)
+    }
+
+    private endDrawing(): void {
+        if (this.drawingCtx.currentPathData) {
+            const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+            path.setAttribute("d", this.drawingCtx.currentPathData);
+            this.postDisplayElementProcessor(path);
+            this.svgElement.appendChild(path);
+        }
+    }
+
+    private startDrawing(): void {
+        if (this.drawingCtx.currentPathData === null) {
+            this.drawingCtx.currentPathData = "";
+        } else if (this.needCreatePath()) {
+            this.endDrawing();
+            this.drawingCtx.currentPathData = "";
+        }
+        this.drawingCtx.pen.clone(this.ctx.pen);
+        this.drawingCtx.brush.clone(this.ctx.brush);
+    }
+
     protected updateViewBox(ext: PointS, origin: PointS): void {
         this.svgElement.setAttribute("viewBox", `${origin.x} ${origin.y} ${ext.x} ${ext.y}`);
     }
 
     protected drawPolygon(points: PointS[]): void {
-        let d = `M ${points[0].x} ${points[0].y} `;
-        d += points.slice(1).reduce((result, next) => {
-            result += `L ${next.x} ${next.y} `;
+        this.startDrawing();
+        if (!this.drawingCtx.endPoint.equals(points[0])) {
+            this.drawingCtx.currentPathData += ` M ${points[0].x} ${points[0].y}`;
+        }
+        this.drawingCtx.currentPathData += points.slice(1).reduce((result, next) => {
+            result += ` L ${next.x} ${next.y} `;
             return result;
         }, "");
-        d += " Z";
-        const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
-        path.setAttribute("d", d);
-        this.postDisplayElementProcessor(path);
-        this.svgElement.appendChild(path);
+        this.drawingCtx.currentPathData += " Z";
+        this.drawingCtx.endPoint = points[points.length - 1];
     }
 
     protected drawArc(arc: CenteredArc, close: boolean): void {
+        this.startDrawing();
         const x0 = arc.cx + arc.rx * Math.cos(arc.stAngle);
         const y0 = arc.cy + arc.ry * Math.sin(arc.stAngle);
         const x1 = arc.cx + arc.rx * Math.cos(arc.stAngle + arc.swAngle);
         const y1 = arc.cy + arc.ry * Math.sin(arc.stAngle + arc.swAngle);
         const largeArc = arc.swAngle > Math.PI ? 0 : 1;
         const sweep = arc.swAngle > 0 ? 0 : 1;
-        const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
-        let d = `M ${x0} ${y0} A ${arc.rx} ${arc.ry} 0 ${largeArc} ${sweep} ${x1} ${y1}`;
-        if (close) {
-            d += " Z";
+        if (this.drawingCtx.endPoint.x !== x0 || this.drawingCtx.endPoint.y !== y0) {
+            this.drawingCtx.currentPathData += ` M ${x0} ${y0}`;
         }
-        path.setAttribute("d", d);
-        this.postDisplayElementProcessor(path);
-        this.svgElement.appendChild(path);
+        this.drawingCtx.currentPathData += `  A ${arc.rx} ${arc.ry} 0 ${largeArc} ${sweep} ${x1} ${y1}`;
+        if (close) {
+            this.drawingCtx.currentPathData += " Z";
+        }
+        this.drawingCtx.endPoint.x = x1;
+        this.drawingCtx.endPoint.y = y1;
     }
 
-    protected drawEllipse(cx: number, cy: number, rx: number, ry: number): void {
-        const ellipse = document.createElementNS("http://www.w3.org/2000/svg", "ellipse");
-        ellipse.setAttribute("cx", cx.toString());
-        ellipse.setAttribute("cy", cy.toString());
-        ellipse.setAttribute("rx", rx.toString());
-        ellipse.setAttribute("ry", ry.toString());
-        this.postDisplayElementProcessor(ellipse);
-        this.svgElement.appendChild(ellipse);
+    protected drawLine(point: PointS): void {
+        this.startDrawing();
+        if (!this.drawingCtx.endPoint.equals(this.ctx.currentPosition)) {
+            this.drawingCtx.currentPathData += `M ${this.ctx.currentPosition.x} ${this.ctx.currentPosition.y}`;
+        }
+        this.drawingCtx.currentPathData += `L ${point.x} ${point.y}`;
+        this.drawingCtx.endPoint = point;
+    }
+
+    protected playEnd(): void {
+        this.endDrawing();
     }
 }

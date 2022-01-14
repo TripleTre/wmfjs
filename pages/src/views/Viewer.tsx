@@ -3,6 +3,7 @@ import { useParams } from "react-router-dom";
 import styled from "styled-components";
 import { useFileBuffer } from "../hooks/LocalCache";
 import { Preview } from "../components/Preview";
+import { RecordEditor } from "../components/RecordEditor";
 
 const RecordFrame = styled.div`
 `;
@@ -15,6 +16,7 @@ export function Viewer() {
     return (
         <RecordFrame>
             <Preview src={fileBuffer} />
+            <RecordEditor src={fileBuffer} />
         </RecordFrame>
     );
 }

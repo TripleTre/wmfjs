@@ -14,4 +14,12 @@ export class PointS extends Serializable {
     @serialize(LiteralType.int16)
     public y: number = 0;
 
+    public clone(from: PointS): void {
+        this.x = from.x;
+        this.y = from.y;
+    }
+
+    public equals(other: PointS): boolean {
+        return this.x === other.x && this.y === other.y;
+    }
 }

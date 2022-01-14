@@ -1,5 +1,6 @@
 import { Pen } from "./structs/Pen";
 import { LogBrush } from "./structs/LogBrush";
+import { PointS } from "./structs";
 
 export interface IPlaybackCtx {
     pen: Pen;
@@ -9,4 +10,5 @@ export interface IPlaybackCtx {
     polyFillRule: "evenodd" | "nonzero";
     miterLimit: number;
     backgroundColor?: number;
+    currentPosition: PointS;
 }

@@ -5,4 +5,5 @@ export type CenteredArc = {
     ry: number;
     stAngle: number;
     swAngle: number;
+    sweep: 0 | 1;
 }

@@ -1,4 +1,4 @@
-import { isArrayType, isLiteralType, LiteralType, SERIALIZE_KEY } from "./decorators";
+import { isArrayType, isLiteralType, isSerializeable, LiteralType, SERIALIZE_KEY } from "./decorators";
 import { MetafileEscapes, RecordType } from "./enums";
 
 export const BYTE_PER_WORD = 2;
@@ -55,6 +55,8 @@ export const bufferToLiteral: {
 
 export abstract class Serializable {
 
+    static serializable = true;
+
     public abstract get byteSize(): number;
 
     public deserialize(buf: ArrayBuffer): void {
@@ -73,9 +75,19 @@ export abstract class Serializable {
                 offset += literalByteLength[ LiteralType[type] ];
                 _this[key] = value;
             } else if (isArrayType(type)) {
-                for (const element of _this[key]) {
-                    element.deserialize(buf.slice(offset));
-                    offset += element.byteSize;
+                let literalList = [];
+                for (let i = 0, len = _this[key].length; i < len; i++) {
+                    const element = _this[key][i];
+                    if (isSerializeable(type.element)) {
+                        element.deserialize(buf.slice(offset));
+                        offset += element.byteSize;
+                    } else if (isLiteralType(type.element)) {
+                        literalList.push(bufferToLiteral[LiteralType[type.element as any] as any](view, offset));
+                        offset += literalByteLength[ LiteralType[type.element as any] as any ];
+                    }
+                }
+                if (isLiteralType(type.element)) {
+                    _this[key] = literalList;
                 }
             } else if (type === ArrayBuffer) {
                 _this[key] = buf.slice(offset);
@@ -101,10 +113,15 @@ export abstract class Serializable {
                 offset += literalByteLength[ LiteralType[type] ];
             } else if (isArrayType(type)) {
                 for (const element of _this[key]) {
-                    const buf: ArrayBuffer = element.serialize();
-                    const uint8Buf = new Uint8Array(buf);
-                    buffer.set(uint8Buf, offset);
-                    offset += element.byteSize;
+                     if (LiteralType[type.element as LiteralType] !== undefined) {
+                        literalToBuffer[LiteralType[type.element as LiteralType] as any](view, offset, element);
+                        offset += literalByteLength[LiteralType[type.element as LiteralType] as any];
+                    } else if (isSerializeable(type.element)) {
+                        const buf: ArrayBuffer = element.serialize();
+                        const uint8Buf = new Uint8Array(buf);
+                        buffer.set(uint8Buf, offset);
+                        offset += element.byteSize;
+                    }
                 }
             } else if (type === ArrayBuffer) {
                 const uint8Buf = new Uint8Array(_this[key]);

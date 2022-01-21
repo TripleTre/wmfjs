@@ -14,6 +14,14 @@ export class PointS extends Serializable {
     @serialize(LiteralType.int16)
     public y: number = 0;
 
+    public constructor(init?: { x: number, y: number }) {
+        super();
+        if (init) {
+            this.x = init.x;
+            this.y = init.y;
+        }
+    }
+
     public clone(from: PointS): void {
         this.x = from.x;
         this.y = from.y;

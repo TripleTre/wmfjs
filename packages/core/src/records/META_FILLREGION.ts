@@ -1,18 +1,20 @@
 import { BYTE_PER_WORD, SerializableRecord } from "../Serializable";
 import { LiteralType, readonly, serialize } from "../decorators";
 import { RecordType } from "../enums";
-import { Region } from "../structs/Region";
 
-export class META_CREATEREGION extends SerializableRecord {
+export class META_FILLREGION extends SerializableRecord {
     @readonly
     @serialize(LiteralType.uint32)
     public get recordSize(): number {
-        return (6 + this.region.byteSize) / BYTE_PER_WORD;
+        return 10 / BYTE_PER_WORD;
     }
 
     @serialize(LiteralType.uint16)
-    public recordFunction: RecordType = RecordType.META_CREATEREGION;
+    public recordFunction: RecordType = RecordType.META_FILLREGION;
 
-    @serialize()
-    public region: Region = new Region();
+    @serialize(LiteralType.uint16)
+    public region: number = 0;
+
+    @serialize(LiteralType.uint16)
+    public brush: number = 0;
 }

@@ -1,4 +1,16 @@
-import { PointS, BasicPlayback, BrushStyle, PenStyle, WindowsMetaFile, CenteredArc, Pen, LogBrush } from "@wmfjs/core";
+import {
+    PointS,
+    BasicPlayback,
+    BrushStyle,
+    PenStyle,
+    WindowsMetaFile,
+    CenteredArc,
+    Pen,
+    LogBrush,
+    PostScriptJoin,
+    getCenteredArcStartPoint,
+    getCenteredArcEndPoint,
+} from "@wmfjs/core";
 import { decimalToCssString } from "./color";
 
 export interface DrawingContext {
@@ -6,6 +18,13 @@ export interface DrawingContext {
     brush: LogBrush;
     endPoint: PointS;
     currentPathData: string | null;
+}
+
+export const LineJoinMap = {
+    [PostScriptJoin.PostScriptMiterJoin]: "miter",
+    [PostScriptJoin.PostScriptRoundJoin]: "round",
+    [PostScriptJoin.PostScriptBevelJoin]: "bevel",
+    [PostScriptJoin.PostScriptNotSet]: "round",
 }
 
 export class SvgPlayback extends BasicPlayback {
@@ -60,8 +79,9 @@ export class SvgPlayback extends BasicPlayback {
     }
 
     private postDisplayElementProcessor(element: SVGElement): void {
-        const { polyFillRule } = this.ctx;
+        const { polyFillRule, lineJoin } = this.ctx;
         element.setAttribute("fill-rule", polyFillRule);
+        element.setAttribute("stroke-linejoin", LineJoinMap[lineJoin]);
         this.applyPenStyle(element);
         this.applyBrushStyle(element);
     }
@@ -95,7 +115,7 @@ export class SvgPlayback extends BasicPlayback {
         this.svgElement.setAttribute("viewBox", `${origin.x} ${origin.y} ${ext.x} ${ext.y}`);
     }
 
-    protected drawPolygon(points: PointS[]): void {
+    protected drawPolygon(points: PointS[], close: boolean): void {
         this.startDrawing();
         if (!this.drawingCtx.endPoint.equals(points[0])) {
             this.drawingCtx.currentPathData += ` M ${points[0].x} ${points[0].y}`;
@@ -104,35 +124,34 @@ export class SvgPlayback extends BasicPlayback {
             result += ` L ${next.x} ${next.y} `;
             return result;
         }, "");
-        this.drawingCtx.currentPathData += " Z";
+        if (close) {
+            this.drawingCtx.currentPathData += " Z";
+        }
         this.drawingCtx.endPoint = points[points.length - 1];
     }
 
     protected drawArc(arc: CenteredArc, close: boolean): void {
         this.startDrawing();
-        const x0 = arc.cx + arc.rx * Math.cos(arc.stAngle);
-        const y0 = arc.cy + arc.ry * Math.sin(arc.stAngle);
-        const x1 = arc.cx + arc.rx * Math.cos(arc.stAngle + arc.swAngle);
-        const y1 = arc.cy + arc.ry * Math.sin(arc.stAngle + arc.swAngle);
-        const largeArc = arc.swAngle > Math.PI ? 0 : 1;
-        const sweep = arc.swAngle > 0 ? 0 : 1;
-        if (this.drawingCtx.endPoint.x !== x0 || this.drawingCtx.endPoint.y !== y0) {
-            this.drawingCtx.currentPathData += ` M ${x0} ${y0}`;
+        const startPoint = getCenteredArcStartPoint(arc);
+        const endPoint = getCenteredArcEndPoint(arc);
+        const largeArc = arc.swAngle > Math.PI ? 1 : 0;
+        if (this.drawingCtx.endPoint.x !== startPoint.x || this.drawingCtx.endPoint.y !== startPoint.y) {
+            this.drawingCtx.currentPathData += ` M ${startPoint.x} ${startPoint.y}`;
         }
-        this.drawingCtx.currentPathData += `  A ${arc.rx} ${arc.ry} 0 ${largeArc} ${sweep} ${x1} ${y1}`;
+        this.drawingCtx.currentPathData += `  A ${arc.rx} ${arc.ry} 0 ${largeArc} ${arc.sweep} ${endPoint.x} ${endPoint.y}`;
         if (close) {
             this.drawingCtx.currentPathData += " Z";
         }
-        this.drawingCtx.endPoint.x = x1;
-        this.drawingCtx.endPoint.y = y1;
+        this.drawingCtx.endPoint.x = endPoint.x;
+        this.drawingCtx.endPoint.y = endPoint.y;
     }
 
     protected drawLine(point: PointS): void {
         this.startDrawing();
         if (!this.drawingCtx.endPoint.equals(this.ctx.currentPosition)) {
-            this.drawingCtx.currentPathData += `M ${this.ctx.currentPosition.x} ${this.ctx.currentPosition.y}`;
+            this.drawingCtx.currentPathData += ` M ${this.ctx.currentPosition.x} ${this.ctx.currentPosition.y}`;
         }
-        this.drawingCtx.currentPathData += `L ${point.x} ${point.y}`;
+        this.drawingCtx.currentPathData += ` L ${point.x} ${point.y}`;
         this.drawingCtx.endPoint = point;
     }
 

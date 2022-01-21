@@ -69,6 +69,7 @@ export function TestCaseItem(props: TestCaseItemProps) {
             }).then(buf => {
                 const wmf = new WindowsMetaFile();
                 wmf.deserialize(buf);
+                console.log(wmf);
                 const svgPlayback = new SvgPlayback(wmf);
                 svgPlayback.display();
                 if (svgAnchor.current) {

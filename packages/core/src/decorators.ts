@@ -16,7 +16,7 @@ export enum LiteralType {
 
 export interface CollectionType {
     collection: typeof Array | typeof Map | typeof Set;
-    element: typeof Serializable;
+    element: (typeof Serializable) | LiteralType;
 };
 
 export function isLiteralType(t: any): t is keyof typeof LiteralType {
@@ -25,6 +25,10 @@ export function isLiteralType(t: any): t is keyof typeof LiteralType {
 
 export function isArrayType(t: any): t is CollectionType {
     return t.collection === Array && t.element;
+}
+
+export function isSerializeable(t: any): t is Serializable {
+    return !!t.serializable;
 }
 
 export function serialize(type?: LiteralType | CollectionType): PropertyDecorator {

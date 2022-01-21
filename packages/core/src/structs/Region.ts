@@ -43,7 +43,8 @@ export class Region extends Serializable {
 
     @serialize(LiteralType.int16)
     public get maxScan(): number {
-        return this.aScans.sort((a, b) => a.scanLines.length - b.scanLines.length)[0].scanLines.length;
+        const sorted = this.aScans.sort((a, b) => a.scanLines.length - b.scanLines.length);
+        return sorted[0]?.scanLines.length || 0;
     };
 
     public aScans: Scan[] = [];

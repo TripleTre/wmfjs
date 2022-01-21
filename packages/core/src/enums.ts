@@ -240,4 +240,11 @@ export enum TextAlign {
 export enum FloodFill {
     FLOODFILLBORDER = 0x0000,
     FLOODFILLSURFACE = 0x0001
+};
+
+export enum PostScriptJoin {
+    PostScriptNotSet = -2,
+    PostScriptMiterJoin = 0,
+    PostScriptRoundJoin = 1,
+    PostScriptBevelJoin = 2
 }

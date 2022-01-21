@@ -7,4 +7,4 @@ export * from "./types";
 export * from "./WindowsMetaFile";
 export * from "./structs";
 export * from "./records";
-
+export * from "./utils";

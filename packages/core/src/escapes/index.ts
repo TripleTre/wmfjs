@@ -1,1 +1,2 @@
 export { SETMITERLIMIT } from "./SETMITERLIMIT";
+export { SETLINEJOIN } from "./SETLINEJOIN";

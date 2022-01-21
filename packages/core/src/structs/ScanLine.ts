@@ -8,6 +8,15 @@ export class ScanLine extends Serializable {
         return 4;
     };
 
+    public constructor(props?: { left: number, right: number }) {
+        super();
+        if (props) {
+            this.left = props.left;
+            this.right = props.right;
+        }
+    }
+
+
     @serialize(LiteralType.uint16)
     public left: number = 0;
 

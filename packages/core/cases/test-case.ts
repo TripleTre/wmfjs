@@ -3,12 +3,12 @@ import {
     BinaryRasterOperation,
     FloodFill,
     HatchStyle,
-    MapMode,
+    MapMode, META_ARC,
     META_CREATEBRUSHINDIRECT,
-    META_CREATEPENINDIRECT,
+    META_CREATEPENINDIRECT, META_CREATEREGION,
     META_EOF,
-    META_ESCAPE, META_LINETO,
-    META_PLACEABLE, META_POLYGON,
+    META_ESCAPE, META_FILLREGION, META_LINETO, META_PIE,
+    META_PLACEABLE, META_POLYGON, META_RECTANGLE, META_ROUNDRECT,
     META_SETBKMODE,
     META_SETMAPMODE,
     META_SETPOLYFILLMODE,
@@ -18,26 +18,32 @@ import {
     META_SETWINDOWEXT,
     META_SETWINDOWORG,
     MixMode, PointS,
-    PolyFillMode,
+    PolyFillMode, PostScriptJoin,
     WindowsMetaFile
 } from "../src";
 import { deleteObject, fillColor, mainColor, selectObject, strokeColor } from "./help";
 import * as path from "path";
-import { SETMITERLIMIT } from "../src/escapes";
+import { SETLINEJOIN, SETMITERLIMIT } from "../src/escapes";
 import { META_EXTFLOODFILL } from "../src/records/META_EXTFLOODFILL";
 import { META_MOVETO } from "../src/records/META_MOVETO";
+import { Region } from "../src/structs/Region";
+import { Scan } from "../src/structs/Scan";
+import { ScanLine } from "../src/structs/ScanLine";
+import { META_POLYLINE } from "../src/records/META_POLYLINE";
+import { META_POLYPOLYGON } from "../src/records/META_POLYPOLYGON";
+import { PolyPolygon } from "../src/structs/PolyPolygon";
 
 
 const wmf = new WindowsMetaFile();
 wmf.placeable = new META_PLACEABLE();
 wmf.placeable.boundingBox.left = 0;
 wmf.placeable.boundingBox.top = 0;
-wmf.placeable.boundingBox.right = 1200;
-wmf.placeable.boundingBox.bottom = 1200;
+wmf.placeable.boundingBox.right = 2400;
+wmf.placeable.boundingBox.bottom = 2400;
 
 const ext = new META_SETWINDOWEXT();
-ext.x = 1200;
-ext.y = 1200;
+ext.x = 2400;
+ext.y = 2400;
 wmf.records.push(ext);
 
 const origin = new META_SETWINDOWORG();
@@ -77,6 +83,12 @@ setMiterLimit.miterLimit = 5;
 escape.escape = setMiterLimit;
 wmf.records.push(escape);
 
+const escape1 = new META_ESCAPE();
+const setLineJoin = new SETLINEJOIN();
+setLineJoin.join = PostScriptJoin.PostScriptMiterJoin;
+escape1.escape = setLineJoin;
+wmf.records.push(escape1);
+
 // const pen1 = new META_CREATEPENINDIRECT();
 // pen1.pen.penStyle = 5;
 // pen1.pen.width.x = 5;
@@ -102,24 +114,19 @@ wmf.records.push(brush);
 wmf.records.push(selectObject(1));
 
 (function draw() {
-    const mt = new META_MOVETO();
-    mt.x = 400;
-    mt.y = 400;
-    wmf.records.push(mt);
-
-    const lt = new META_LINETO();
-    lt.x = 1000;
-    lt.y = 1000;
-    wmf.records.push(lt);
-})();
-(function draw() {
-    const lt = new META_LINETO();
-    lt.x = 300;
-    lt.y = 1000;
-    wmf.records.push(lt);
+    const arc = new META_ARC();
+    arc.xEndArc = 2400;
+    arc.yEndArc = 0;
+    arc.xStartArc = 2400;
+    arc.yStartArc = 2400;
+    arc.topRect = 0;
+    arc.bottomRect = 2400;
+    arc.leftRect = 0;
+    arc.rightRect = 2400;
+    wmf.records.push(arc);
 })();
 
-// wmf.records.push(deleteObject(2));
+wmf.records.push(deleteObject(2));
 wmf.records.push(deleteObject(1));
 wmf.records.push(deleteObject(0));
 

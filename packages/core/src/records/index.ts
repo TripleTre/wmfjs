@@ -20,8 +20,15 @@ export { META_CHORD } from "./META_CHORD";
 export { META_ELLIPSE } from "./META_ELLIPSE";
 export { META_LINETO } from "./META_LINETO";
 export { META_MOVETO } from "./META_MOVETO";
-
-// building
-// export { META_EXTFLOODFILL } from "./META_EXTFLOODFILL";
-// export { META_FLOODFILL } from "./META_FLOODFILL";
-// export { META_SELECTCLIPREGION } from "./META_SELECTCLIPREGION";
+export { META_CREATEREGION } from "./META_CREATEREGION";
+export { META_FILLREGION } from "./META_FILLREGION";
+export { META_EXTFLOODFILL } from "./META_EXTFLOODFILL";
+export { META_FLOODFILL } from "./META_FLOODFILL";
+export { META_SELECTCLIPREGION } from "./META_SELECTCLIPREGION";
+export { META_SAVEDC } from "./META_SAVEDC";
+export { META_INTERSECTCLIPRECT } from "./META_INTERSECTCLIPRECT";
+export { META_PIE } from "./META_PIE";
+export { META_POLYLINE } from "./META_POLYLINE";
+export { META_POLYPOLYGON } from "./META_POLYPOLYGON";
+export { META_RECTANGLE } from "./META_RECTANGLE";
+export { META_ROUNDRECT } from "./META_ROUNDRECT";

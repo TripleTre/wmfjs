@@ -1,7 +1,9 @@
+import { Buffer } from "buffer"
+import { decode, encode } from "iconv-lite";
 import { IPlaybackCtx } from "./IPlayback";
 import {
     BinaryRasterOperation,
-    BrushStyle,
+    BrushStyle, CharacterSet,
     MapMode,
     MetafileEscapes,
     MixMode,
@@ -33,7 +35,9 @@ import {
     META_SETTEXTALIGN,
     META_SETTEXTCOLOR,
     META_SETWINDOWEXT,
-    META_SETWINDOWORG
+    META_SETWINDOWORG,
+    META_SETPIXEL, META_CREATEFONTINDIRECT, META_EXTTEXTOUT,
+    META_TEXTOUT,
 } from "./records";
 import { ColorRef, LogBrush, Pen, PointS } from "./structs";
 import { SETMITERLIMIT } from "./escapes";
@@ -42,12 +46,14 @@ import { META_CHORD } from "./records/META_CHORD";
 import { CenteredArc } from "./types";
 import { META_MOVETO } from "./records/META_MOVETO";
 import { Region } from "./structs/Region";
+import { Font } from "./structs/Font";
+import { CharSetMap } from "./const";
 
 export function isEscape(record: SerializableRecord): record is META_ESCAPE {
     return record.recordFunction === RecordType.META_ESCAPE;
 }
 
-export type WMFObject = Pen | LogBrush | Region;
+export type WMFObject = Pen | LogBrush | Region | Font;
 
 export abstract class BasicPlayback {
 
@@ -65,6 +71,8 @@ export abstract class BasicPlayback {
     protected abstract drawArc(arc: CenteredArc, close: boolean): void;
 
     protected abstract drawLine(point: PointS): void;
+    protected abstract drawText(text: string, x: number, y: number, dx?: number[]): void;
+    protected abstract fillPixel(point: PointS, color: ColorRef): void;
 
     protected abstract playEnd(): void;
 
@@ -72,6 +80,7 @@ export abstract class BasicPlayback {
         this.wmf = wmfObject;
         this.objectTable = new Array(wmfObject.header.numberOfObjects);
         this.ctx.brush = new LogBrush();
+        this.ctx.font = new Font();
         this.ctx.brush.colorRef = new ColorRef();
         this.ctx.brush.colorRef.r = 255;
         this.ctx.brush.colorRef.g = 255;
@@ -109,7 +118,11 @@ export abstract class BasicPlayback {
 
     protected putObject(obj: WMFObject): void {
         const nextIndex = this.objectTable.findIndex(v => !v);
-        this.objectTable[ nextIndex ] = obj;
+        if (nextIndex >= 0) {
+            this.objectTable[ nextIndex ] = obj;
+        } else {
+            this.objectTable.push(obj);
+        }
     }
 
     META_SETWINDOWEXT(record: META_SETWINDOWEXT): void {
@@ -166,6 +179,8 @@ export abstract class BasicPlayback {
             this.ctx.pen = obj;
         } else if (obj instanceof LogBrush) {
             this.ctx.brush = obj;
+        } else if (obj instanceof Font) {
+            this.ctx.font = obj;
         }
     }
 
@@ -346,5 +361,40 @@ export abstract class BasicPlayback {
         this.ctx.currentPosition.x = arcTREnd.x;
         this.ctx.currentPosition.y = arcTREnd.y;
         this.drawLine(arcTLStart);
+    }
+
+    META_SETPIXEL(record: META_SETPIXEL): void {
+        this.fillPixel(new PointS({ x: record.x, y: record.y }), record.colorRef);
+    }
+
+    META_CREATEFONTINDIRECT(record: META_CREATEFONTINDIRECT): void {
+        this.putObject(record.font);
+    }
+
+    META_EXTTEXTOUT(record: META_EXTTEXTOUT): void {
+        const { font } = this.ctx;
+        const charSetName = CharSetMap[CharacterSet[font.charSet] as any];
+        const text = decode(Buffer.from(record.string.slice(0, record.stringLength)), charSetName, {
+            stripBOM: true,
+        });
+        const step = record.dx.length / text.length;
+        let dx: any = record.dx.reduce<number[]>((result, next, index) => {
+            if (index % step === 0) {
+                result.push(0);
+            }
+            result[result.length - 1] += next;
+            return result;
+        }, []);
+        dx = text.length > 1 ? dx : undefined;
+        this.drawText(text, record.x, record.y, dx);
+    }
+
+    META_TEXTOUT(record: META_TEXTOUT): void {
+        const { font } = this.ctx;
+        const charSetName = CharSetMap[CharacterSet[font.charSet] as any];
+        const text = decode(Buffer.from(record.string.slice(0, record.stringLength)), charSetName, {
+            stripBOM: true,
+        });
+        this.drawText(text, record.xStart, record.yStart);
     }
 }

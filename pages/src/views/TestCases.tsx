@@ -20,8 +20,12 @@ const GroupContent = styled.div`
 `;
 
 const ASSETS: any = {
-    drawing: ["polygon", "arc", "chord", "ellipse", "line-to", "pie", "polyline", "poly-polygon", "rect", "round-rect"],
-    // drawing: ["round-rect"],
+    drawing: [
+        "polygon", "arc", "chord", "ellipse", "line-to", "pie", "polyline",
+        "poly-polygon", "rect", "round-rect", "set-pixel"
+    ],
+    // drawing: ["set-pixel"],
+    "pen-style": ["dash-dot"]
 }
 
 export function TestCases() {

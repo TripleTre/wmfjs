@@ -20,10 +20,13 @@ export class ColorRef extends Serializable {
     @serialize(LiteralType.uint8)
     public reserved: number = 0x00;
 
-    public clone(from: ColorRef): void {
-        this.r = from.r;
-        this.g = from.g;
-        this.b = from.b;
+    public constructor(init?: { r: number, g: number, b: number }) {
+        super();
+        if (init) {
+            this.r = init.r;
+            this.g = init.g;
+            this.b = init.b;
+        }
     }
 
     public equals(target: ColorRef): boolean {

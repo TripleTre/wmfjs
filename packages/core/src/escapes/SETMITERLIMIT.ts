@@ -13,7 +13,7 @@ export class SETMITERLIMIT extends SerializableEscape {
         return this.escapeData.byteLength;
     }
 
-    @serialize()
+    @serialize({ type: "ArrayBuffer", byteLength: 4 })
     public get escapeData(): ArrayBuffer {
         const buf = new ArrayBuffer(4);
         const view = new DataView(buf);

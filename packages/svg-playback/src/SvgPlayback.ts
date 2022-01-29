@@ -9,7 +9,7 @@ import {
     LogBrush,
     PostScriptJoin,
     getCenteredArcStartPoint,
-    getCenteredArcEndPoint,
+    getCenteredArcEndPoint, ColorRef,
 } from "@wmfjs/core";
 import { decimalToCssString } from "./color";
 
@@ -46,17 +46,24 @@ export class SvgPlayback extends BasicPlayback {
         };
     }
 
+    private applyFontStyle(element: SVGTextElement): void {
+        const { font } = this.ctx;
+        if (font.height < 0) {
+            element.setAttribute("font-size", `${Math.abs(font.height)}px`);
+        }
+        if (font.italic === 1) {
+            element.setAttribute("font-style", "italic");
+        }
+        element.setAttribute("font-family", font.faceName);
+    }
+
     private applyPenStyle(element: SVGElement): void {
         const { pen } = this.drawingCtx;
-        const flags = Object.keys(PenStyle).filter(v => /^PS_/.test(v)) as Array<keyof typeof PenStyle>;
-        flags.forEach(f => {
-            if (PenStyle[f] & pen.penStyle) {
-                console.log(f);
-            }
-        });
-        element.setAttribute("stroke-width", pen.width.x.toString());
+        // todo the min stroke-width seems to be related to PS_INSIDEFRAME
+        const strokeWidth = Math.max(pen.width.x, 1);
+        element.setAttribute("stroke-width", strokeWidth.toString());
         element.setAttribute("stroke", decimalToCssString(pen.colorRef.valueOf()));
-        if (PenStyle.PS_NULL & pen.penStyle) {
+        if ((pen.penStyle & 0x000f) === PenStyle.PS_NULL) {
             element.setAttribute("stroke-width", "0");
         }
         if (PenStyle.PS_ENDCAP_FLAT & pen.penStyle) {
@@ -64,6 +71,16 @@ export class SvgPlayback extends BasicPlayback {
         }
         if (PenStyle.PS_JOIN_MITER & pen.penStyle) {
             element.setAttribute("stroke-linejoin", "miter");
+        }
+        // dash and dot
+        if ((pen.penStyle & 0x000f) === PenStyle.PS_DOT) {
+            element.setAttribute("stroke-dasharray", `${strokeWidth} ${strokeWidth}`);
+        } else if ((pen.penStyle & 0x000f) === PenStyle.PS_DASH) {
+            element.setAttribute("stroke-dasharray", `${3 * strokeWidth} ${strokeWidth}`);
+        } else if ((pen.penStyle & 0x000f) === PenStyle.PS_DASHDOT) {
+            element.setAttribute("stroke-dasharray", `${3 * strokeWidth} ${strokeWidth} ${strokeWidth} ${strokeWidth}`);
+        } else if ((pen.penStyle & 0x000f) === PenStyle.PS_DASHDOTDOT) {
+            element.setAttribute("stroke-dasharray", `${3 * strokeWidth} ${strokeWidth} ${strokeWidth} ${strokeWidth} ${strokeWidth} ${strokeWidth}`);
         }
     }
 
@@ -107,8 +124,8 @@ export class SvgPlayback extends BasicPlayback {
             this.endDrawing();
             this.drawingCtx.currentPathData = "";
         }
-        this.drawingCtx.pen.clone(this.ctx.pen);
-        this.drawingCtx.brush.clone(this.ctx.brush);
+        this.drawingCtx.pen.duplicate(this.ctx.pen);
+        this.drawingCtx.brush.duplicate(this.ctx.brush);
     }
 
     protected updateViewBox(ext: PointS, origin: PointS): void {
@@ -153,6 +170,41 @@ export class SvgPlayback extends BasicPlayback {
         }
         this.drawingCtx.currentPathData += ` L ${point.x} ${point.y}`;
         this.drawingCtx.endPoint = point;
+    }
+
+    protected fillPixel(point: PointS, color: ColorRef): void {
+        const rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+        rect.setAttribute("x", point.x.toString());
+        rect.setAttribute("y", point.y.toString());
+        rect.setAttribute("width", "2");
+        rect.setAttribute("height", "1");
+        rect.setAttribute("fill", decimalToCssString(color.valueOf()));
+        this.svgElement.appendChild(rect);
+    }
+
+    protected drawText(text: string, x: number, y: number, dx?: number[]): void {
+        const { currentPosition } = this.ctx;
+        const textElement = document.createElementNS("http://www.w3.org/2000/svg", "text");
+        let d = 0;
+        if (dx) {
+            const chars = text.split("");
+            for (let i = 0; i < chars.length; i++) {
+                const span = document.createElementNS("http://www.w3.org/2000/svg", "tspan");
+                span.textContent = chars[i];
+                if (i > 0) {
+                    d += dx[i - 1];
+                    span.setAttribute("x", (x + currentPosition.x + d).toString());
+                }
+                textElement.appendChild(span);
+            }
+        } else {
+            textElement.textContent = text;
+        }
+        textElement.setAttribute("x", (x + currentPosition.x).toString());
+        textElement.setAttribute("y", (y + currentPosition.y).toString());
+        textElement.setAttribute("alignment-baseline", "text-before-edge");
+        this.applyFontStyle(textElement);
+        this.svgElement.appendChild(textElement);
     }
 
     protected playEnd(): void {

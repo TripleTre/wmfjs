@@ -41,7 +41,7 @@ export class WindowsMetaFile {
             const fn = buf.getUint16(offset + 4, true);
             const recordType = RecordType[ fn ];
             if (!(RECORDS as any)[ recordType ]) {
-                console.warn("unsupported record payload", RecordType[ fn ]);
+                console.warn("unsupported record", RecordType[ fn ]);
                 offset += size;
                 continue;
             }

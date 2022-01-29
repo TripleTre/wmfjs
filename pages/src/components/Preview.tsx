@@ -22,10 +22,10 @@ export function Preview(props: PreviewProps) {
             const wmf = new WindowsMetaFile();
             wmf.deserialize(props.src);
             console.log("wmf1", wmf);
-            // const resultBuffer = wmf.serialize();
-            // const wmf2 = new WindowsMetaFile();
-            // wmf2.deserialize(resultBuffer);
-            // console.log("wmf2", wmf2);
+            const resultBuffer = wmf.serialize();
+            const wmf2 = new WindowsMetaFile();
+            wmf2.deserialize(resultBuffer);
+            console.log("wmf2", wmf2);
             const svgPlayback = new SvgPlayback(wmf);
             svgPlayback.display();
             if (svgAnchor.current) {

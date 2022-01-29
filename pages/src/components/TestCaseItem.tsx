@@ -49,8 +49,8 @@ const View = styled.div`
   display: flex;
   justify-content: center;
   align-items: center;
-  width: 300px;
-  height: 300px;
+  width: 350px;
+  height: 350px;
 `;
 
 export interface TestCaseItemProps {

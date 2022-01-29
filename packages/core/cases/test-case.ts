@@ -1,6 +1,6 @@
 import * as fs from "fs";
 import {
-    BinaryRasterOperation,
+    BinaryRasterOperation, ColorRef,
     FloodFill,
     HatchStyle,
     MapMode, META_ARC,
@@ -10,7 +10,7 @@ import {
     META_ESCAPE, META_FILLREGION, META_LINETO, META_PIE,
     META_PLACEABLE, META_POLYGON, META_RECTANGLE, META_ROUNDRECT,
     META_SETBKMODE,
-    META_SETMAPMODE,
+    META_SETMAPMODE, META_SETPIXEL,
     META_SETPOLYFILLMODE,
     META_SETROP2,
     META_SETTEXTALIGN,
@@ -38,12 +38,12 @@ const wmf = new WindowsMetaFile();
 wmf.placeable = new META_PLACEABLE();
 wmf.placeable.boundingBox.left = 0;
 wmf.placeable.boundingBox.top = 0;
-wmf.placeable.boundingBox.right = 2400;
-wmf.placeable.boundingBox.bottom = 2400;
+wmf.placeable.boundingBox.right = 2000;
+wmf.placeable.boundingBox.bottom = 2000;
 
 const ext = new META_SETWINDOWEXT();
-ext.x = 2400;
-ext.y = 2400;
+ext.x = 2000;
+ext.y = 2000;
 wmf.records.push(ext);
 
 const origin = new META_SETWINDOWORG();
@@ -89,41 +89,95 @@ setLineJoin.join = PostScriptJoin.PostScriptMiterJoin;
 escape1.escape = setLineJoin;
 wmf.records.push(escape1);
 
-// const pen1 = new META_CREATEPENINDIRECT();
-// pen1.pen.penStyle = 5;
-// pen1.pen.width.x = 5;
-// pen1.pen.colorRef.r = 55;
-// pen1.pen.colorRef.g = 55;
-// pen1.pen.colorRef.b = 55;
-// wmf.records.push(pen1);
+(function brush() {
+    const brush = new META_CREATEBRUSHINDIRECT();
+    brush.logBrush.brushStyle = 0;
+    brush.logBrush.brushHatch = HatchStyle.HS_HORIZONTAL;
+    brush.logBrush.colorRef = fillColor;
+    wmf.records.push(brush);
+    wmf.records.push(selectObject(0));
+})();
 
-const pen2 = new META_CREATEPENINDIRECT();
-pen2.pen.penStyle = 0;
-pen2.pen.width.x = 20;
-pen2.pen.colorRef = strokeColor;
-wmf.records.push(pen2);
-
-wmf.records.push(selectObject(0));
-
-const brush = new META_CREATEBRUSHINDIRECT();
-brush.logBrush.brushStyle = 0;
-brush.logBrush.brushHatch = HatchStyle.HS_HORIZONTAL;
-brush.logBrush.colorRef = fillColor;
-wmf.records.push(brush);
-
-wmf.records.push(selectObject(1));
-
+(function pen() {
+    const pen2 = new META_CREATEPENINDIRECT();
+    pen2.pen.penStyle = 0x0001;
+    pen2.pen.width.x = 20;
+    pen2.pen.colorRef = strokeColor;
+    wmf.records.push(pen2);
+    wmf.records.push(selectObject(1));
+})();
 (function draw() {
-    const arc = new META_ARC();
-    arc.xEndArc = 2400;
-    arc.yEndArc = 0;
-    arc.xStartArc = 2400;
-    arc.yStartArc = 2400;
-    arc.topRect = 0;
-    arc.bottomRect = 2400;
-    arc.leftRect = 0;
-    arc.rightRect = 2400;
-    wmf.records.push(arc);
+    const polyline = new META_POLYLINE();
+    polyline.aPoints = [
+        new PointS({ x: 100, y: 100 }),
+        new PointS({ x: 1900, y: 100 }),
+    ];
+    wmf.records.push(polyline);
+})();
+
+(function pen() {
+    const pen2 = new META_CREATEPENINDIRECT();
+    pen2.pen.penStyle = 0x0002;
+    pen2.pen.width.x = 20;
+    pen2.pen.colorRef = strokeColor;
+    wmf.records.push(pen2);
+    wmf.records.push(selectObject(2));
+})();
+(function draw() {
+    const polyline = new META_POLYLINE();
+    polyline.aPoints = [
+        new PointS({ x: 100, y: 300 }),
+        new PointS({ x: 1900, y: 300 }),
+    ];
+    wmf.records.push(polyline);
+})();
+(function pen() {
+    const pen2 = new META_CREATEPENINDIRECT();
+    pen2.pen.penStyle = 0x0003;
+    pen2.pen.width.x = 20;
+    pen2.pen.colorRef = strokeColor;
+    wmf.records.push(pen2);
+    wmf.records.push(selectObject(3));
+})();
+(function draw() {
+    const polyline = new META_POLYLINE();
+    polyline.aPoints = [
+        new PointS({ x: 100, y: 500 }),
+        new PointS({ x: 1900, y: 500 }),
+    ];
+    wmf.records.push(polyline);
+})();
+(function pen() {
+    const pen2 = new META_CREATEPENINDIRECT();
+    pen2.pen.penStyle = 0x0004;
+    pen2.pen.width.x = 20;
+    pen2.pen.colorRef = strokeColor;
+    wmf.records.push(pen2);
+    wmf.records.push(selectObject(4));
+})();
+(function draw() {
+    const polyline = new META_POLYLINE();
+    polyline.aPoints = [
+        new PointS({ x: 100, y: 700 }),
+        new PointS({ x: 1900, y: 700 }),
+    ];
+    wmf.records.push(polyline);
+})();
+(function pen() {
+    const pen2 = new META_CREATEPENINDIRECT();
+    pen2.pen.penStyle = 7;
+    pen2.pen.width.x = 20;
+    pen2.pen.colorRef = strokeColor;
+    wmf.records.push(pen2);
+    wmf.records.push(selectObject(5));
+})();
+(function draw() {
+    const polyline = new META_POLYLINE();
+    polyline.aPoints = [
+        new PointS({ x: 100, y: 900 }),
+        new PointS({ x: 1900, y: 900 }),
+    ];
+    wmf.records.push(polyline);
 })();
 
 wmf.records.push(deleteObject(2));

@@ -1,7 +1,18 @@
-import { isArrayType, isLiteralType, isSerializeable, LiteralType, SERIALIZE_KEY } from "./decorators";
+import { Buffer } from "buffer"
+import { decode, encode } from "iconv-lite";
+import {
+    isArrayBufferType,
+    isArrayType,
+    isLiteralType,
+    isSerializeable,
+    isStringType,
+    LiteralType,
+    SERIALIZE_KEY
+} from "./decorators";
 import { MetafileEscapes, RecordType } from "./enums";
 
 export const BYTE_PER_WORD = 2;
+export const BYTE_PER_CHAR = 4;
 
 export const literalByteLength: {
     [key in keyof typeof LiteralType]: number
@@ -10,7 +21,7 @@ export const literalByteLength: {
     uint8: 1,
     int16: 2,
     uint16: 2,
-    uint32: 4,
+    uint32: 4
 }
 
 export const literalToBuffer: {
@@ -65,6 +76,13 @@ export abstract class Serializable {
         const keys = Reflect.getMetadata(SERIALIZE_KEY.keys, this);
         let offset = 0;
         for (const key of keys) {
+            const optionalIndicate = Reflect.getMetadata(SERIALIZE_KEY.optional, this, key);
+            if (optionalIndicate &&
+                (((optionalIndicate === "remaining") && offset === buf.byteLength) ||
+                (typeof optionalIndicate === "function" && !optionalIndicate(_this)))
+            ) {
+                continue;
+            }
             if (key === "reserved") {
                 continue;
             }
@@ -89,8 +107,26 @@ export abstract class Serializable {
                 if (isLiteralType(type.element)) {
                     _this[key] = literalList;
                 }
-            } else if (type === ArrayBuffer) {
-                _this[key] = buf.slice(offset);
+            } else if (isArrayBufferType(type)) {
+                let byteLength;
+                if (typeof type.byteLength === "function") {
+                    byteLength = type.byteLength(_this);
+                } else {
+                    byteLength = type.byteLength;
+                }
+                if (type.align && byteLength % 2 === 1) {
+                    byteLength += 1;
+                }
+                _this[key] = buf.slice(offset, offset + byteLength);
+                offset += byteLength;
+            } else if (isStringType(type)) {
+                let strBuf = buf.slice(offset, offset + type.byteLength);
+                if (type.nullTerminated) {
+                    const index = new Uint8Array(strBuf).findIndex(v => v === 0);
+                    strBuf = strBuf.slice(0, index);
+                }
+                const str = decode(Buffer.from(strBuf), type.characters);
+                _this[key] = str;
             } else {
                 value = (new type() as Serializable);
                 value.deserialize(buf.slice(offset));
@@ -107,6 +143,13 @@ export abstract class Serializable {
         const keys = Reflect.getMetadata(SERIALIZE_KEY.keys, this);
         let offset = 0;
         for (const key of keys) {
+            const optionalIndicate = Reflect.getMetadata(SERIALIZE_KEY.optional, this, key);
+            if (optionalIndicate &&
+                (((optionalIndicate === "remaining") && offset === this.byteSize) ||
+                    (typeof optionalIndicate === "function" && !optionalIndicate(_this)))
+            ) {
+                continue;
+            }
             const type = Reflect.getMetadata(SERIALIZE_KEY.type, this, key);
             if (isLiteralType(type)) {
                 literalToBuffer[LiteralType[type]](view, offset, _this[key]);
@@ -123,10 +166,27 @@ export abstract class Serializable {
                         offset += element.byteSize;
                     }
                 }
-            } else if (type === ArrayBuffer) {
-                const uint8Buf = new Uint8Array(_this[key]);
-                buffer.set(uint8Buf, offset);
-                offset += _this[key].byteLength;
+            } else if (isArrayBufferType(type)) {
+                let byteLength = _this[key].byteLength;
+                if (type.align && byteLength % 2 === 1) {
+                    byteLength += 1;
+                }
+                const targetBuf = new Uint8Array(byteLength);
+                targetBuf.set(new Uint8Array(_this[key]), 0);
+                buffer.set(targetBuf, offset);
+                offset += byteLength;
+            } else if (isStringType(type)) {
+                const arrayBuf = new Uint8Array(type.byteLength);
+                const buf = encode(_this[key], type.characters);
+                for (let i = 0, len = type.byteLength; i < len; i++ ) {
+                    if (buf[i]) {
+                        arrayBuf[i] = buf[i];
+                    } else {
+                        arrayBuf[i] = 0;
+                    }
+                }
+                buffer.set(arrayBuf, offset);
+                offset += type.byteLength;
             } else {
                 const buf: ArrayBuffer = _this[key].serialize();
                 const uint8Buf = new Uint8Array(buf);
@@ -139,6 +199,44 @@ export abstract class Serializable {
             buffer.set(escapeBuf, offset);
         }
         return buffer.buffer;
+    }
+
+    public duplicate(from: this): void {
+        const _this = this as any;
+        const _from = from as any;
+        const keys = Reflect.getMetadata(SERIALIZE_KEY.keys, this);
+        for (const key of keys) {
+            const type = Reflect.getMetadata(SERIALIZE_KEY.type, this, key);
+            if (isLiteralType(type)) {
+                _this[ key ] = _from[ key ];
+            } else if (isArrayType(type)) {
+                _this[ key ] = _from[ key ];
+            } else if (type === ArrayBuffer) {
+                _this[ key ] = _from[ key ];
+            } else {
+                _this[ key ].duplicate(_from[ key ]);
+            }
+        }
+    }
+
+    public clone(): this {
+        const _this = this as any;
+        // @ts-ignore
+        const target = new this.constructor();
+        const keys = Reflect.getMetadata(SERIALIZE_KEY.keys, this);
+        for (const key of keys) {
+            const type = Reflect.getMetadata(SERIALIZE_KEY.type, this, key);
+            if (isLiteralType(type)) {
+                target[ key ] = _this[ key ];
+            } else if (isArrayType(type)) {
+                _this[ key ] = _this[ key ];
+            } else if (type === ArrayBuffer) {
+                _this[ key ] = _this[ key ];
+            } else {
+                _this[ key ] = _this[ key ].clone();
+            }
+        }
+        return target;
     }
 }
 

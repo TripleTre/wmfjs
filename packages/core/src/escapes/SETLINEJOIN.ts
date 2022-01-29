@@ -13,7 +13,7 @@ export class SETLINEJOIN extends SerializableEscape {
         return this.escapeData.byteLength;
     };
 
-    @serialize()
+    @serialize({ byteLength: 4, type: "ArrayBuffer" })
     public get escapeData(): ArrayBuffer {
         const buf = new ArrayBuffer(4);
         const view = new DataView(buf);

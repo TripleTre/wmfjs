@@ -14,6 +14,7 @@ export enum LiteralType {
     int16,
     uint16,
     uint32,
+    int32,
 };
 
 export interface CollectionType {

@@ -21,7 +21,8 @@ export const literalByteLength: {
     uint8: 1,
     int16: 2,
     uint16: 2,
-    uint32: 4
+    uint32: 4,
+    int32: 4,
 }
 
 export const literalToBuffer: {
@@ -42,6 +43,9 @@ export const literalToBuffer: {
     uint32: (view: DataView, offset: number, value: number) => {
         return view.setUint32(offset, value, true);
     },
+    int32: (view: DataView, offset: number, value: number) => {
+        return view.setInt32(offset, value, true);
+    },
 }
 
 export const bufferToLiteral: {
@@ -61,6 +65,9 @@ export const bufferToLiteral: {
     },
     uint32: (view: DataView, offset: number) => {
         return view.getUint32(offset, true);
+    },
+    int32: (view: DataView, offset: number) => {
+        return view.getInt32(offset, true);
     },
 }
 
@@ -114,11 +121,16 @@ export abstract class Serializable {
                 } else {
                     byteLength = type.byteLength;
                 }
-                if (type.align && byteLength % 2 === 1) {
+                if (type.align && byteLength > 0 && byteLength % 2 === 1) {
                     byteLength += 1;
                 }
-                _this[key] = buf.slice(offset, offset + byteLength);
-                offset += byteLength;
+                if (byteLength > 0) {
+                    _this[key] = buf.slice(offset, offset + byteLength);
+                    offset += byteLength;
+                } else {
+                    _this[key] = buf.slice(offset);
+                    offset += _this[key].byteLength;
+                }
             } else if (isStringType(type)) {
                 let strBuf = buf.slice(offset, offset + type.byteLength);
                 if (type.nullTerminated) {

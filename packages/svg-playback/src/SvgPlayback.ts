@@ -37,6 +37,7 @@ export class SvgPlayback extends BasicPlayback {
         super(wmf);
         this.svgElement = document.createElementNS("http://www.w3.org/2000/svg", "svg");
         this.svgElement.setAttribute("xmlns", "http://www.w3.org/2000/svg");
+        this.svgElement.setAttribute("xmlns:xlink", "http://www.w3.org/1999/xlink");
         this.svgElement.setAttribute("version", "1.1");
         this.drawingCtx = {
             pen: new Pen(),
@@ -205,6 +206,16 @@ export class SvgPlayback extends BasicPlayback {
         textElement.setAttribute("alignment-baseline", "text-before-edge");
         this.applyFontStyle(textElement);
         this.svgElement.appendChild(textElement);
+    }
+
+    protected drawImage(src: string, width: number, height: number): void {
+        const imageElement = document.createElementNS("http://www.w3.org/2000/svg", "image");
+        imageElement.setAttributeNS("http://www.w3.org/1999/xlink", "xlink:href", src);
+        imageElement.setAttribute("width", width.toString());
+        imageElement.setAttribute("height", height.toString());
+        imageElement.setAttribute("x", "0");
+        imageElement.setAttribute("y", "0");
+        this.svgElement.appendChild(imageElement);
     }
 
     protected playEnd(): void {

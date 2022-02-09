@@ -37,7 +37,7 @@ import {
     META_SETWINDOWEXT,
     META_SETWINDOWORG,
     META_SETPIXEL, META_CREATEFONTINDIRECT, META_EXTTEXTOUT,
-    META_TEXTOUT,
+    META_TEXTOUT, META_DIBSTRETCHBLT,
 } from "./records";
 import { ColorRef, LogBrush, Pen, PointS } from "./structs";
 import { SETMITERLIMIT } from "./escapes";
@@ -73,6 +73,7 @@ export abstract class BasicPlayback {
     protected abstract drawLine(point: PointS): void;
     protected abstract drawText(text: string, x: number, y: number, dx?: number[]): void;
     protected abstract fillPixel(point: PointS, color: ColorRef): void;
+    protected abstract drawImage(src: string, w: number, h: number): void;
 
     protected abstract playEnd(): void;
 
@@ -396,5 +397,11 @@ export abstract class BasicPlayback {
             stripBOM: true,
         });
         this.drawText(text, record.xStart, record.yStart);
+    }
+
+    META_DIBSTRETCHBLT(record: META_DIBSTRETCHBLT): void {
+        const src = record.target.png();
+        const { width, height } = record.target;
+        this.drawImage(src, width, height);
     }
 }

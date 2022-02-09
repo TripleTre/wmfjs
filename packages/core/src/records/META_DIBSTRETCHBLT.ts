@@ -1,12 +1,18 @@
 import { BYTE_PER_WORD, SerializableRecord } from "../Serializable";
 import { LiteralType, readonly, serialize } from "../decorators";
 import { RecordType, TernaryRasterOperation } from "../enums";
+import { DeviceIndependentBitmap } from "../structs/DeviceIndependentBitmap";
 
 export class META_DIBSTRETCHBLT extends SerializableRecord {
+
     @readonly
     @serialize(LiteralType.uint32)
     public get recordSize(): number {
-        return 8 / BYTE_PER_WORD;
+        if (this.target) {
+            return (26 + this.target.byteSize) / BYTE_PER_WORD;
+        } else {
+            return 28 / BYTE_PER_WORD;
+        }
     };
 
     @serialize(LiteralType.uint16)
@@ -40,5 +46,5 @@ export class META_DIBSTRETCHBLT extends SerializableRecord {
     public xDest: number = 0;
 
     @serialize()
-    public target: ArrayBuffer = new ArrayBuffer(0);
+    public target: DeviceIndependentBitmap = new DeviceIndependentBitmap();
 }

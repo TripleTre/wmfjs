@@ -586,3 +586,25 @@ export enum TernaryRasterOperation {
     DPSOO = 0xFE,
     WHITENESS = 0xFF
 };
+
+export enum BitCount {
+    BI_BITCOUNT_0 = 0x0000,
+    BI_BITCOUNT_1 = 0x0001,
+    BI_BITCOUNT_2 = 0x0004,
+    BI_BITCOUNT_3 = 0x0008,
+    BI_BITCOUNT_4 = 0x0010,
+    BI_BITCOUNT_5 = 0x0018,
+    BI_BITCOUNT_6 = 0x0020
+};
+
+export enum Compression {
+    BI_RGB = 0x0000,
+    BI_RLE8 = 0x0001,
+    BI_RLE4 = 0x0002,
+    BI_BITFIELDS = 0x0003,
+    BI_JPEG = 0x0004,
+    BI_PNG = 0x0005,
+    BI_CMYK = 0x000B,
+    BI_CMYKRLE8 = 0x000C,
+    BI_CMYKRLE4 = 0x000D
+};

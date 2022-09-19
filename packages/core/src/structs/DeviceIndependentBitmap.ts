@@ -100,9 +100,9 @@ export class DeviceIndependentBitmap extends Serializable {
             width: this.DIBHeaderInfo_info?.width || this.DIBHeaderInfo_core?.width,
             height: Math.abs(height),
         });
-
         if (this.DIBHeaderInfo_info) {
             if (this.DIBHeaderInfo_info.compression === Compression.BI_RGB) {
+                const byteSkip = (this.aData.byteLength - img.width * img.height * 3) / img.height;
                 let aDataIndex = 0;
                 for (let y = 0; y < img.height; y++) {
                     for (let x = 0; x < img.width; x++) {
@@ -113,10 +113,7 @@ export class DeviceIndependentBitmap extends Serializable {
                         img.data[ idx ] = view.getUint8(aDataIndex++);
                         img.data[ idx + 3 ] = 255;
                     }
-                    // byte alignment
-                    if (img.width % 2 !== 0) {
-                        aDataIndex++;
-                    }
+                    aDataIndex += byteSkip;
                 }
             }
         } else if (this.DIBHeaderInfo_core) {
@@ -124,7 +121,11 @@ export class DeviceIndependentBitmap extends Serializable {
         }
 
         const buf = PNG.sync.write(img);
-        const base64Str = btoa(String.fromCharCode(...buf));
+        let str = "";
+        for (let i = 0; i < buf.length; i++) {
+            str += String.fromCharCode(buf[i]);
+        }
+        const base64Str = btoa(str);
         return `data:image/png;base64,${base64Str}`;
     }
 }

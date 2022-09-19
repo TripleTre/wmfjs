@@ -5,6 +5,8 @@ import styled from "styled-components";
 
 interface PreviewProps {
     src: ArrayBuffer;
+    playback: "svg";
+    className?: string;
 }
 
 const Layout = styled.div`
@@ -35,7 +37,7 @@ export function Preview(props: PreviewProps) {
     }, [props.src]);
 
     return (
-        <Layout>
+        <Layout className={props.className}>
             <SvgLayout ref={svgAnchor} />
         </Layout>
     )

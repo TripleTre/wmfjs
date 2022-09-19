@@ -1,6 +1,8 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import styled from "styled-components";
+import { Preview } from "./Preview";
+import { useFileBuffer } from "../hooks/LocalCache";
 
 interface IFileItemProps {
     name: string;
@@ -23,26 +25,31 @@ const FileName = styled.div`
   font-size: 14px;
 `;
 
-const Preivew = styled.div`
-  background: #fff;
-  width: 92px;
-  height: 98px;
-  border-radius: 9px;
+const StyledPreview = styled(Preview)`
+  background: aliceblue;
 `;
 
-export class FileItem extends React.Component<IFileItemProps, any> {
+const StyledLink = styled(Link)`
+  display: block;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+`;
 
-    public render() {
-        const { name } = this.props;
-        return (
-            <FileItemLayout>
-                <Link to={`/meta-viewer/${name}`}>
-                    <Preivew />
-                    <FileName>
-                        {name.replace(".wmf", "")}
-                    </FileName>
-                </Link>
-            </FileItemLayout>
-        );
-    }
+export function FileItem(props: IFileItemProps) {
+
+    const fileBuffer = useFileBuffer(props.name);
+
+    return (
+        <FileItemLayout>
+            <StyledLink to={`/meta-viewer/${props.name}`}>
+                <StyledPreview src={fileBuffer} playback={"svg"} />
+                <FileName>
+                    {props.name.replace(".wmf", "")}
+                </FileName>
+            </StyledLink>
+        </FileItemLayout>
+    );
 }

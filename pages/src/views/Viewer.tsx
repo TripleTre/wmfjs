@@ -15,7 +15,7 @@ export function Viewer() {
 
     return (
         <RecordFrame>
-            <Preview src={fileBuffer} />
+            <Preview src={fileBuffer} playback={"svg"} />
             <RecordEditor src={fileBuffer} />
         </RecordFrame>
     );
